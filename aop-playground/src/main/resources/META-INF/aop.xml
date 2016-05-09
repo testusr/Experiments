@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aspectj>
+    <aspects>
+        <!-- weave in just this aspect -->
+        <aspect name="com.mycompany.logging.LoggingAspect" />
+    </aspects>
+    <weaver options="-debug -Xset:weaveJavaxPackages=true">
+        <!-- only weave classes in our application-specific packages -->
+        <include within="com.mycompany..*" />
+    </weaver>
+</aspectj>

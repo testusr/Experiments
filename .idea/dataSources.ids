@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="dataSourceStorage">
+  <data-source name="HSQLDB (Local) - hsqldb" uuid="22efedbb-bf71-4d5a-b6a2-c157042b6f46">
+    <database-info product="HSQL Database Engine" version="2.3.2" jdbc-version="4.0" driver-name="HSQL Database Engine Driver" driver-version="2.3.2">
+      <identifier-quote-string>&quot;</identifier-quote-string>
+    </database-info>
+    <case-sensitivity plain-identifiers="upper" quoted-identifiers="exact"/>
+    <schema name="PUBLIC" catalog="PUBLIC"/>
+    <table name="EMPLOYEE" schema="PUBLIC" catalog="PUBLIC" type="TABLE">
+      <column name="ID" sqlType="INTEGER" precision="32" scale="0" nullable="false" jdbcType="4"/>
+      <column name="EMAIL" sqlType="VARCHAR" precision="100" scale="0" nullable="false" jdbcType="12"/>
+      <column name="FIRST_NAME" sqlType="VARCHAR" precision="100" scale="0" nullable="false" jdbcType="12"/>
+      <column name="LAST_NAME" sqlType="VARCHAR" precision="100" scale="0" nullable="false" jdbcType="12"/>
+      <primary-key name="SYS_PK_10122" columns="ID"/>
+    </table>
+    <table name="EMPLOYEE_AUD" schema="PUBLIC" catalog="PUBLIC" type="TABLE">
+      <column name="ID" sqlType="INTEGER" precision="32" scale="0" nullable="false" jdbcType="4"/>
+      <column name="REV" sqlType="INTEGER" precision="32" scale="0" nullable="false" jdbcType="4"/>
+      <column name="REVTYPE" sqlType="TINYINT" precision="8" scale="0" nullable="true" jdbcType="-6"/>
+      <column name="EMAIL" sqlType="VARCHAR" precision="100" scale="0" nullable="true" jdbcType="12"/>
+      <column name="FIRST_NAME" sqlType="VARCHAR" precision="100" scale="0" nullable="true" jdbcType="12"/>
+      <column name="LAST_NAME" sqlType="VARCHAR" precision="100" scale="0" nullable="true" jdbcType="12"/>
+      <primary-key name="SYS_PK_10130" columns="ID,REV"/>
+      <foreign-key name="FK_5785IDQ2CAV3BK9QN0H11YRKS" columns="REV" ref-table="REVINFO" ref-schema="PUBLIC" ref-catalog="PUBLIC" ref-columns="REV" update-rule="3" delete-rule="3"/>
+    </table>
+    <table name="REVINFO" schema="PUBLIC" catalog="PUBLIC" type="TABLE">
+      <column name="REV" sqlType="INTEGER" precision="32" scale="0" nullable="false" jdbcType="4" autoIncrement="true"/>
+      <column name="REVTSTMP" sqlType="BIGINT" precision="64" scale="0" nullable="true" jdbcType="-5"/>
+      <primary-key name="SYS_PK_10134" columns="REV"/>
+    </table>
+  </data-source>
+</component>

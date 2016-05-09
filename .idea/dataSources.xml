@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="4211667055">
+    <data-source source="LOCAL" name="HSQLDB (Local) - hsqldb" uuid="22efedbb-bf71-4d5a-b6a2-c157042b6f46">
+      <driver-ref>hsqldb.local</driver-ref>
+      <synchronize>true</synchronize>
+      <configured-by-url>true</configured-by-url>
+      <jdbc-driver>org.hsqldb.jdbc.JDBCDriver</jdbc-driver>
+      <jdbc-url>jdbc:hsqldb:file:/tmp/hsqldb/hsqldb-playground</jdbc-url>
+    </data-source>
+  </component>
+</project>
