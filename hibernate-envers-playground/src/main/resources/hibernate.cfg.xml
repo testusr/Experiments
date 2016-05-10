@@ -37,9 +37,6 @@
 
     <mapping class="smeo.experiments.playground.envers.model.EmployeeEntity"/>
     <mapping class="smeo.experiments.playground.envers.model.Address"/>
-    <mapping class="smeo.experiments.playground.envers.model.DerivedFromAuditedBaseEntity"/>
-    <mapping class="smeo.experiments.playground.envers.model.EntityWithCollections"/>
-
     <mapping class="smeo.experiments.playground.envers.revisionentity.RevisionEntity"/>
 
   </session-factory>
