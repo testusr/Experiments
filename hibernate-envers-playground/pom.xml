@@ -14,10 +14,12 @@
   <url>http://maven.apache.org</url>
 
   <properties>
+    <!-- first working version with our models -->
     <hibernate.version>4.2.0.Final</hibernate.version>
-    <!--  not working versions -->
-    <!--hibernate.version>3.6.1.Final</hibernate.version-->
-    <!--hibernate.version>3.6.1.Final</hibernate.version-->
+
+    <!-- hibernate.version>4.1.9.Final</hibernate.version // DOES NOT Initialize model has to change -->
+    <!--... -->
+    <!--hibernate.version>3.6.1.Final</hibernate.version  // DOES NOT Initialize model has to change -->
   </properties>
 
   <build>
