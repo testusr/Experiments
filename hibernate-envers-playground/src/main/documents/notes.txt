@@ -1,0 +1,1 @@
+@Auditable cannot be attached to a base class only entities can be annotated.

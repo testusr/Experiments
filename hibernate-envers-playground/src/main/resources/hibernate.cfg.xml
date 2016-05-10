@@ -1,33 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE hibernate-configuration PUBLIC
-        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+    "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
-    <session-factory>
-        <property name="hibernate.archive.autodetection">class,hbm</property>
-        <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
-        <property name="hibernate.show_sql">true</property>
-        <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
-        <property name="hibernate.connection.username">sa</property>
-        <property name="hibernate.connection.password"></property>
-        <!--<property name="hibernate.connection.url">jdbc:hsqldb:mem:hsqldb-playground</property>-->
-        <property name="hibernate.connection.url">jdbc:hsqldb:file:/tmp/hsqldb/hsqldb-playground</property>
-        <property name="hibernate.hbm2ddl.auto">create</property>
+  <session-factory>
+    <property name="hibernate.archive.autodetection">class,hbm</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
+    <property name="hibernate.show_sql">true</property>
+    <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
+    <property name="hibernate.connection.username">sa</property>
+    <property name="hibernate.connection.password"></property>
+    <!--<property name="hibernate.connection.url">jdbc:hsqldb:mem:hsqldb-playground</property>-->
+    <property name="hibernate.connection.url">jdbc:hsqldb:file:/tmp/hsqldb/hsqldb-playground</property>
+    <property name="hibernate.hbm2ddl.auto">create</property>
 
-        <!-- envers envers listeners -->
-        <property name="hibernate.ejb.event.post-insert"
-                  >org.hibernate.ejb.event.EJB3PostInsertEventListener,org.hibernate.envers.event.AuditEventListener</property>
-        <property name="hibernate.ejb.event.post-update"
-                  >org.hibernate.ejb.event.EJB3PostUpdateEventListener,org.hibernate.envers.event.AuditEventListener</property>
-        <property name="hibernate.ejb.event.post-delete"
-                  >org.hibernate.ejb.event.EJB3PostDeleteEventListener,org.hibernate.envers.event.AuditEventListener</property>
-        <property name="hibernate.ejb.event.pre-collection-update"
-                  >org.hibernate.envers.event.AuditEventListener</property>
-        <property name="hibernate.ejb.event.pre-collection-remove"
-                  >org.hibernate.envers.event.AuditEventListener</property>
-        <property name="hibernate.ejb.event.post-collection-recreate"
-                  >org.hibernate.envers.event.AuditEventListener</property>
+    <!-- envers envers listeners -->
+    <property name="hibernate.ejb.event.post-insert"
+    >org.hibernate.ejb.event.EJB3PostInsertEventListener,org.hibernate.envers.event.AuditEventListener
+    </property>
+    <property name="hibernate.ejb.event.post-update"
+    >org.hibernate.ejb.event.EJB3PostUpdateEventListener,org.hibernate.envers.event.AuditEventListener
+    </property>
+    <property name="hibernate.ejb.event.post-delete"
+    >org.hibernate.ejb.event.EJB3PostDeleteEventListener,org.hibernate.envers.event.AuditEventListener
+    </property>
+    <property name="hibernate.ejb.event.pre-collection-update"
+    >org.hibernate.envers.event.AuditEventListener
+    </property>
+    <property name="hibernate.ejb.event.pre-collection-remove"
+    >org.hibernate.envers.event.AuditEventListener
+    </property>
+    <property name="hibernate.ejb.event.post-collection-recreate"
+    >org.hibernate.envers.event.AuditEventListener
+    </property>
 
-        <mapping class="smeo.experiments.playground.envers.model.EmployeeEntity"></mapping>
-    </session-factory>
+    <mapping class="smeo.experiments.playground.envers.model.EmployeeEntity"/>
+    <mapping class="smeo.experiments.playground.envers.model.DerivedFromAuditedBaseEntity"/>
+    <mapping class="smeo.experiments.playground.envers.model.EntityWithCollections"/>
+
+  </session-factory>
 </hibernate-configuration>
