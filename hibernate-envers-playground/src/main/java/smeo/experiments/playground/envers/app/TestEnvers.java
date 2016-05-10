@@ -3,6 +3,7 @@ package smeo.experiments.playground.envers.app;
 import org.hibernate.Session;
 import smeo.experiments.playground.envers.common.HibernateUtil;
 import smeo.experiments.playground.envers.model.Address;
+import smeo.experiments.playground.envers.model.EmbeddedPosition;
 import smeo.experiments.playground.envers.model.EmployeeEntity;
 
 /**
@@ -10,6 +11,10 @@ import smeo.experiments.playground.envers.model.EmployeeEntity;
  * http://howtodoinjava.com/hibernate/hibernate-4-using-in-memory-database-with-hibernate/
  */
 public class TestEnvers {
+
+	/**
+	 * Shows how attribute changes are recorded in the AUD table
+	 */
 	public static void testAttributeChanges(Session session) {
 		session.beginTransaction();
 		// Add new Employee object
@@ -43,7 +48,6 @@ public class TestEnvers {
 
 	public static void testChangesToReferencedObject(Session session) {
 		session.beginTransaction();
-		// Add new Employee object
 		EmployeeEntity emp = defaultEmployee();
 		save(session, emp);
 
@@ -64,15 +68,11 @@ public class TestEnvers {
 		save(session, emp);
 	}
 
-	public static void main(String[] args) {
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		// testAttributeChanges(session);
-		// testChangesToReferencedObject(session);
-		testChangeAttributesOfDifferentObjects(session);
-
-		HibernateUtil.shutdown();
-	}
-
+	/**
+	 * Shows nicely that every change on any object causes an increase of a global version
+	 * 
+	 * @param session
+	 */
 	private static void testChangeAttributesOfDifferentObjects(Session session) {
 		session.beginTransaction();
 		// Add new Employee object
@@ -125,5 +125,57 @@ public class TestEnvers {
 	private static void save(Session session, Object toPersist) {
 		session.save(toPersist);
 		session.getTransaction().commit();
+	}
+
+	public static void main(String[] args) {
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		// testAttributeChanges(session);
+		// testChangesToReferencedObject(session);
+		// testChangeAttributesOfDifferentObjects(session);
+		// testChangeToEmbbededObjects(session);
+		testChangeToListOfEmbbededObjects(session);
+
+		HibernateUtil.shutdown();
+	}
+
+	private static void testChangeToListOfEmbbededObjects(Session session) {
+		session.beginTransaction();
+		EmployeeEntity emp = defaultEmployee();
+		save(session, emp);
+
+		session.beginTransaction();
+		emp.addSubPosition(new EmbeddedPosition("pos1", 11));
+		save(session, emp);
+
+		session.beginTransaction();
+		emp.addSubPosition(new EmbeddedPosition("pos2", 22));
+		save(session, emp);
+
+		session.beginTransaction();
+		emp.addSubPosition(new EmbeddedPosition("pos3", 33));
+		save(session, emp);
+
+	}
+
+	/**
+	 * Treated like regular attribute changes increase version by one
+	 */
+	private static void testChangeToEmbbededObjects(Session session) {
+		session.beginTransaction();
+		EmployeeEntity emp = defaultEmployee();
+		save(session, emp);
+
+		session.beginTransaction();
+		emp.setMainPosition(new EmbeddedPosition("pos1", 11));
+		save(session, emp);
+
+		session.beginTransaction();
+		emp.setMainPosition(new EmbeddedPosition("pos2", 22));
+		save(session, emp);
+
+		session.beginTransaction();
+		emp.setMainPosition(new EmbeddedPosition("pos3", 33));
+		save(session, emp);
+
 	}
 }

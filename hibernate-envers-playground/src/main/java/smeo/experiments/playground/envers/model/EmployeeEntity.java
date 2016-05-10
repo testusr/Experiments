@@ -4,6 +4,8 @@ import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by smeo on 09.05.16.
@@ -17,6 +19,8 @@ public class EmployeeEntity implements Serializable {
 	@Id
 	@Column(name = "ID", unique = true, nullable = false)
 	private Integer employeeId;
+
+	// Attributes
 	@Column(name = "EMAIL", unique = true, nullable = false, length = 100)
 	private String email;
 	@Column(name = "FIRST_NAME", unique = false, nullable = false, length = 100)
@@ -24,8 +28,22 @@ public class EmployeeEntity implements Serializable {
 	@Column(name = "LAST_NAME", unique = false, nullable = false, length = 100)
 	private String lastName;
 
+	// References
+
+	@Embedded
+	// hibernate does not allow this to be null
+	private EmbeddedPosition mainPosition = EmbeddedPosition.none();
+
+	@ElementCollection
+	@CollectionTable(name = "LIST_SUBPOSITIONS")
+	List<EmbeddedPosition> subPositions = new ArrayList<>();
+
 	@OneToOne(fetch = FetchType.EAGER)
 	private Address adress;
+
+	public void addSubPosition(EmbeddedPosition embeddedPosition) {
+		subPositions.add(embeddedPosition);
+	}
 
 	public Integer getEmployeeId() {
 		return employeeId;
@@ -65,5 +83,13 @@ public class EmployeeEntity implements Serializable {
 
 	public void setAdress(Address adress) {
 		this.adress = adress;
+	}
+
+	public EmbeddedPosition getMainPosition() {
+		return mainPosition;
+	}
+
+	public void setMainPosition(EmbeddedPosition mainPosition) {
+		this.mainPosition = mainPosition;
 	}
 }
