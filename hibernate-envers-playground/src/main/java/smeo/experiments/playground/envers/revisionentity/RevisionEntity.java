@@ -5,7 +5,9 @@ import org.hibernate.envers.DefaultRevisionEntity;
 import javax.persistence.Entity;
 
 /**
- * Created by truehl on 10.05.16.
+ * RevisionEntity is used to add additional information to every change that is audited.
+ * The object is automatically created on each change and passed to a listener object
+ * specified via @RevisionEntity
  */
 @Entity
 @org.hibernate.envers.RevisionEntity(RevisionListenerImpl.class)
