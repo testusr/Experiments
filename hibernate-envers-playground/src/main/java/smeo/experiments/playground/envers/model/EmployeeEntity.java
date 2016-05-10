@@ -92,4 +92,17 @@ public class EmployeeEntity implements Serializable {
 	public void setMainPosition(EmbeddedPosition mainPosition) {
 		this.mainPosition = mainPosition;
 	}
+
+	@Override
+	public String toString() {
+		return "EmployeeEntity{" +
+				"employeeId=" + employeeId +
+				", email='" + email + '\'' +
+				", firstName='" + firstName + '\'' +
+				", lastName='" + lastName + '\'' +
+				", mainPosition=" + mainPosition +
+				", subPositions=" + subPositions +
+				", adress=" + adress +
+				'}';
+	}
 }

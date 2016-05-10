@@ -1,16 +1,46 @@
 package smeo.experiments.playground.envers.app;
 
 import org.hibernate.Session;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
 import smeo.experiments.playground.envers.common.HibernateUtil;
 import smeo.experiments.playground.envers.model.Address;
 import smeo.experiments.playground.envers.model.EmbeddedPosition;
 import smeo.experiments.playground.envers.model.EmployeeEntity;
+import smeo.experiments.playground.envers.revisionentity.RevisionEntity;
+
+import java.util.List;
 
 /**
  * Created by smeo on 09.05.16.
  * http://howtodoinjava.com/hibernate/hibernate-4-using-in-memory-database-with-hibernate/
  */
 public class TestEnvers {
+
+	public static void testFetchingOldObjectVersion(Session session) {
+		AuditReader auditReader = AuditReaderFactory.get(session);
+
+		List<Object[]> listOfVersions = auditReader.createQuery()
+				.forRevisionsOfEntity(EmployeeEntity.class, false, true)
+				.getResultList();
+		System.out.println("#############################################");
+		System.out.println("## LIST OF VERSIONS:");
+
+		int lastVersion = 1;
+		for (Object[] curreEntrySet : listOfVersions) {
+			lastVersion = ((RevisionEntity) curreEntrySet[1]).getId();
+			System.out.printf("## RevisionType: %s Revision: %d\n", String.valueOf(curreEntrySet[2]),
+					lastVersion);
+		}
+
+		System.out.println("###############################################");
+		for (int i = 1; i <= lastVersion; i++) {
+			EmployeeEntity historicalEmployVersion = (EmployeeEntity) auditReader.createQuery()
+					.forEntitiesAtRevision(EmployeeEntity.class, i)
+					.getSingleResult();
+			System.out.printf("## Historical v%d: %s \n", i, historicalEmployVersion.toString());
+		}
+	}
 
 	/**
 	 * Shows how attribute changes are recorded in the AUD table
@@ -129,11 +159,12 @@ public class TestEnvers {
 
 	public static void main(String[] args) {
 		Session session = HibernateUtil.getSessionFactory().openSession();
-		// testAttributeChanges(session);
+		testAttributeChanges(session);
 		// testChangesToReferencedObject(session);
 		// testChangeAttributesOfDifferentObjects(session);
 		// testChangeToEmbbededObjects(session);
-		testChangeToListOfEmbbededObjects(session);
+		// testChangeToListOfEmbbededObjects(session);
+		testFetchingOldObjectVersion(session);
 
 		HibernateUtil.shutdown();
 	}

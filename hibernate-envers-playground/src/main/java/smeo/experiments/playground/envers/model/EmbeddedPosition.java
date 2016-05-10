@@ -46,4 +46,12 @@ public class EmbeddedPosition {
 		result = 31 * result + (int) (salaryGroup ^ (salaryGroup >>> 32));
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return "EmbeddedPosition{" +
+				"description='" + description + '\'' +
+				", salaryGroup=" + salaryGroup +
+				'}';
+	}
 }
