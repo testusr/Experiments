@@ -7,11 +7,12 @@
     <property name="hibernate.archive.autodetection">class,hbm</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
     <property name="hibernate.show_sql">true</property>
-    <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
+    <!--<property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>-->
+    <property name="hibernate.connection.driver_class">net.sf.log4jdbc.DriverSpy</property>
     <property name="hibernate.connection.username">sa</property>
     <property name="hibernate.connection.password"></property>
-    <!--<property name="hibernate.connection.url">jdbc:hsqldb:mem:hsqldb-playground</property>-->
-    <property name="hibernate.connection.url">jdbc:hsqldb:file:/tmp/hsqldb/hsqldb-playground</property>
+    <!--<property name="hibernate.connection.url">jdbc:log4jdbc:hsqldb:mem:hsqldb-playground</property>-->
+    <property name="hibernate.connection.url">jdbc:log4jdbc:hsqldb:file:/tmp/hsqldb/hsqldb-playground;shutdown=true;hsqldb.write_delay=false</property>
     <property name="hibernate.hbm2ddl.auto">create</property>
 
     <!-- envers envers listeners -->
