@@ -13,11 +13,11 @@ import java.util.List;
 @Audited
 @Entity
 @org.hibernate.annotations.Entity(dynamicUpdate = true)
-@Table(name = "Employee", uniqueConstraints = { @UniqueConstraint(columnNames = "ID"), @UniqueConstraint(columnNames = "EMAIL") })
+@Table(name = "Employee")
 public class EmployeeEntity implements Serializable {
 	private static final long serialVersionUID = -1798070786993154676L;
 	@Id
-	@Column(name = "ID", unique = true, nullable = false)
+	@Column(name = "ID", nullable = false)
 	private Integer employeeId;
 
 	// Attributes

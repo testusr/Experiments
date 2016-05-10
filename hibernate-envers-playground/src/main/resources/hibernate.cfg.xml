@@ -7,37 +7,31 @@
     <property name="hibernate.archive.autodetection">class,hbm</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
     <property name="hibernate.show_sql">true</property>
+
+    <!-- regular connection without logging -->
     <!--<property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>-->
+    <!--<property name="hibernate.connection.url">jdbc:hsqldb:mem:hsqldb-playground</property>-->
+    <!--<property name="hibernate.connection.url">jdbc:hsqldb:file:/tmp/hsqldb/hsqldb-playground;shutdown=true;hsqldb.write_delay=false</property>-->
+
+    <!-- enabled SQL logging -->
     <property name="hibernate.connection.driver_class">net.sf.log4jdbc.DriverSpy</property>
-    <property name="hibernate.connection.username">sa</property>
-    <property name="hibernate.connection.password"></property>
     <!--<property name="hibernate.connection.url">jdbc:log4jdbc:hsqldb:mem:hsqldb-playground</property>-->
     <property name="hibernate.connection.url">jdbc:log4jdbc:hsqldb:file:/tmp/hsqldb/hsqldb-playground;shutdown=true;hsqldb.write_delay=false</property>
-    <property name="hibernate.hbm2ddl.auto">create</property>
 
-    <!-- envers envers listeners -->
-    <property name="hibernate.ejb.event.post-insert"
-    >org.hibernate.ejb.event.EJB3PostInsertEventListener,org.hibernate.envers.event.AuditEventListener
-    </property>
-    <property name="hibernate.ejb.event.post-update"
-    >org.hibernate.ejb.event.EJB3PostUpdateEventListener,org.hibernate.envers.event.AuditEventListener
-    </property>
-    <property name="hibernate.ejb.event.post-delete"
-    >org.hibernate.ejb.event.EJB3PostDeleteEventListener,org.hibernate.envers.event.AuditEventListener
-    </property>
-    <property name="hibernate.ejb.event.pre-collection-update"
-    >org.hibernate.envers.event.AuditEventListener
-    </property>
-    <property name="hibernate.ejb.event.pre-collection-remove"
-    >org.hibernate.envers.event.AuditEventListener
-    </property>
-    <property name="hibernate.ejb.event.post-collection-recreate"
-    >org.hibernate.envers.event.AuditEventListener
-    </property>
+    <property name="hibernate.connection.username">sa</property>
+    <property name="hibernate.connection.password"></property>
+    <property name="hibernate.hbm2ddl.auto">create</property>
 
     <mapping class="smeo.experiments.playground.envers.model.EmployeeEntity"/>
     <mapping class="smeo.experiments.playground.envers.model.Address"/>
     <mapping class="smeo.experiments.playground.envers.revisionentity.RevisionEntity"/>
 
+    <!--hibernate.version>3.6.1.Final</hibernate.version-->
+    <listener class="org.hibernate.envers.event.AuditEventListener" type="post-insert"/>
+    <listener class="org.hibernate.envers.event.AuditEventListener" type="post-update"/>
+    <listener class="org.hibernate.envers.event.AuditEventListener" type="post-delete"/>
+    <listener class="org.hibernate.envers.event.AuditEventListener" type="pre-collection-update"/>
+    <listener class="org.hibernate.envers.event.AuditEventListener" type="pre-collection-remove"/>
+    <listener class="org.hibernate.envers.event.AuditEventListener" type="post-collection-recreate"/>
   </session-factory>
 </hibernate-configuration>

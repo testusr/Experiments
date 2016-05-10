@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @Table(name = "Adress")
 public class Address {
 	@Id
-	@Column(name = "ID", unique = true, nullable = false)
+	@Column(name = "ID", nullable = false)
 	private final String id;
 
 	public Address(String id) {

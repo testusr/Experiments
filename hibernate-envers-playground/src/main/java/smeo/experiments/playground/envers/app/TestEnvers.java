@@ -48,7 +48,7 @@ public class TestEnvers {
 	public static void testAttributeChanges(Session session) {
 		session.beginTransaction();
 		// Add new Employee object
-		EmployeeEntity emp = defaultEmployee();
+		EmployeeEntity emp = defaultEmployee(1);
 		save(session, emp);
 
 		session.beginTransaction();
@@ -67,9 +67,9 @@ public class TestEnvers {
 
 	}
 
-	private static EmployeeEntity defaultEmployee() {
+	private static EmployeeEntity defaultEmployee(int id) {
 		EmployeeEntity emp = new EmployeeEntity();
-		emp.setEmployeeId(1);
+		emp.setEmployeeId(id);
 		emp.setEmail("default@mail.com");
 		emp.setFirstName("default-firstname");
 		emp.setLastName("default-lastName");
@@ -78,11 +78,11 @@ public class TestEnvers {
 
 	public static void testChangesToReferencedObject(Session session) {
 		session.beginTransaction();
-		EmployeeEntity emp = defaultEmployee();
+		EmployeeEntity emp = defaultEmployee(2);
 		save(session, emp);
 
 		session.beginTransaction();
-		Address address = new Address("id#a1");
+		Address address = new Address("id#a2");
 		address.setPostcode(1111);
 		address.setStreet("first marvel street");
 		address.setHouseNo(11);
@@ -106,9 +106,9 @@ public class TestEnvers {
 	private static void testChangeAttributesOfDifferentObjects(Session session) {
 		session.beginTransaction();
 		// Add new Employee object
-		EmployeeEntity emp = defaultEmployee();
+		EmployeeEntity emp = defaultEmployee(3);
 
-		Address address = new Address("id#a1");
+		Address address = new Address("id#a3");
 		address.setPostcode(1111);
 		address.setStreet("first marvel street");
 		address.setHouseNo(11);
@@ -157,21 +157,9 @@ public class TestEnvers {
 		session.getTransaction().commit();
 	}
 
-	public static void main(String[] args) {
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		testAttributeChanges(session);
-		// testChangesToReferencedObject(session);
-		// testChangeAttributesOfDifferentObjects(session);
-		// testChangeToEmbbededObjects(session);
-		// testChangeToListOfEmbbededObjects(session);
-		testFetchingOldObjectVersion(session);
-
-		HibernateUtil.shutdown();
-	}
-
 	private static void testChangeToListOfEmbbededObjects(Session session) {
 		session.beginTransaction();
-		EmployeeEntity emp = defaultEmployee();
+		EmployeeEntity emp = defaultEmployee(4);
 		save(session, emp);
 
 		session.beginTransaction();
@@ -193,7 +181,7 @@ public class TestEnvers {
 	 */
 	private static void testChangeToEmbbededObjects(Session session) {
 		session.beginTransaction();
-		EmployeeEntity emp = defaultEmployee();
+		EmployeeEntity emp = defaultEmployee(5);
 		save(session, emp);
 
 		session.beginTransaction();
@@ -208,5 +196,17 @@ public class TestEnvers {
 		emp.setMainPosition(new EmbeddedPosition("pos3", 33));
 		save(session, emp);
 
+	}
+
+	public static void main(String[] args) {
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		// testAttributeChanges(session);
+		// testChangesToReferencedObject(session);
+		// testChangeAttributesOfDifferentObjects(session);
+		// testChangeToEmbbededObjects(session);
+		testChangeToListOfEmbbededObjects(session);
+		testFetchingOldObjectVersion(session);
+
+		HibernateUtil.shutdown();
 	}
 }

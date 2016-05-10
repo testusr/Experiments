@@ -14,7 +14,10 @@
   <url>http://maven.apache.org</url>
 
   <properties>
-    <hibernate.version>4.3.6.Final</hibernate.version>
+    <hibernate.version>4.2.0.Final</hibernate.version>
+    <!--  not working versions -->
+    <!--hibernate.version>3.6.1.Final</hibernate.version-->
+    <!--hibernate.version>3.6.1.Final</hibernate.version-->
   </properties>
 
   <build>
@@ -34,7 +37,7 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-envers</artifactId>
-      <version>4.3.6.Final</version>
+      <version>${hibernate.version}</version>
     </dependency>
 
     <dependency>
@@ -51,11 +54,11 @@
     </dependency>
 
     <!-- optional -->
-    <dependency>
+    <!--dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-osgi</artifactId>
       <version>${hibernate.version}</version>
-    </dependency>
+    </dependency-->
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-c3p0</artifactId>
