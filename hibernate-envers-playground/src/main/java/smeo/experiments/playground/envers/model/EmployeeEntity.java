@@ -12,7 +12,6 @@ import java.util.List;
  */
 @Audited
 @Entity
-@org.hibernate.annotations.Entity(dynamicUpdate = true)
 @Table(name = "Employee")
 public class EmployeeEntity implements Serializable {
 	private static final long serialVersionUID = -1798070786993154676L;
@@ -38,7 +37,7 @@ public class EmployeeEntity implements Serializable {
 	@CollectionTable(name = "LIST_SUBPOSITIONS")
 	List<EmbeddedPosition> subPositions = new ArrayList<>();
 
-	@OneToOne(fetch = FetchType.EAGER)
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private Address adress;
 
 	public void addSubPosition(EmbeddedPosition embeddedPosition) {

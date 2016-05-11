@@ -14,12 +14,9 @@
   <url>http://maven.apache.org</url>
 
   <properties>
-    <!-- first working version with our models -->
-    <hibernate.version>4.2.0.Final</hibernate.version>
+    <!-- first working version with our models is 4.2.0.Final current platform version 3.6.0.Final-->
+    <hibernate.version>5.1.0.Final</hibernate.version>
 
-    <!-- hibernate.version>4.1.9.Final</hibernate.version // DOES NOT Initialize model has to change -->
-    <!--... -->
-    <!--hibernate.version>3.6.1.Final</hibernate.version  // DOES NOT Initialize model has to change -->
   </properties>
 
   <build>
@@ -36,6 +33,11 @@
     </plugins>
   </build>
   <dependencies>
+    <dependency>
+      <groupId>com.thoughtworks.xstream</groupId>
+      <artifactId>xstream</artifactId>
+      <version>1.4.8</version>
+    </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-envers</artifactId>

@@ -22,6 +22,10 @@ public class Address {
 		this.id = id;
 	}
 
+	protected Address() {
+		id = null;
+	}
+
 	private String street;
 	private long postcode;
 	private int houseNo;
