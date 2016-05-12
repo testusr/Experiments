@@ -38,13 +38,12 @@ public class TestEnvers {
 		session.clear();
 		AuditReader auditReader = AuditReaderFactory.get(session);
 
-		EmployeeEntity historicalEmployVersion = getEntryInRevisionViaListIteration(EmployeeEntity.class, 1, session);
+		EmployeeEntity historicalEmployVersion = getEntryInRevisionViaListIteration(EmployeeEntity.class, 3, 1, session);
 		session.beginTransaction();
 		LOGGER.message().append("HistoricalEmplyVersion").newline()
 				.appendAsXml(historicalEmployVersion).logStdout();
 		merge(session, historicalEmployVersion);
 	}
-
 
 	public static <T> T initializeAndUnproxy(T entity) {
 		if (entity == null) {
@@ -89,11 +88,12 @@ public class TestEnvers {
 		return (T) resultList.get(0);
 	}
 
-	public static <T> T getEntryInRevisionViaListIteration(Class<T> clazz, int revision, Session session) {
+	public static <T> T getEntryInRevisionViaListIteration(Class<T> clazz, int objectId, int revision, Session session) {
 		AuditReader auditReader = AuditReaderFactory.get(session);
 		List<Object[]> listOfVersions = auditReader.createQuery()
 				.forRevisionsOfEntity(clazz, false, true)
 				.add(AuditEntity.revisionNumber().eq(revision))
+				.add(AuditEntity.id().eq(objectId))
 				.getResultList();
 
 		for (Object[] curreEntrySet : listOfVersions) {
@@ -164,9 +164,9 @@ public class TestEnvers {
 	private static EmployeeEntity defaultEmployee(int id) {
 		EmployeeEntity emp = new EmployeeEntity();
 		emp.setEmployeeId(id);
-		emp.setEmail("default@mail.com");
-		emp.setFirstName("default-firstname");
-		emp.setLastName("default-lastName");
+		emp.setEmail(id + "#default@mail.com");
+		emp.setFirstName("default-firstname#" + id);
+		emp.setLastName("default-lastName#" + id);
 		return emp;
 	}
 
@@ -198,11 +198,17 @@ public class TestEnvers {
 	 * @param session
 	 */
 	private static void testChangeAttributesOfDifferentObjects(Session session) {
-		session.beginTransaction();
+		int employeeId = 3;
 		// Add new Employee object
-		EmployeeEntity emp = defaultEmployee(3);
+		createEmployeAndChangeAttributesAndReferencedAddress(session, employeeId);
 
-		Address address = new Address("id#a3");
+	}
+
+	private static void createEmployeAndChangeAttributesAndReferencedAddress(Session session, int employeeId) {
+		session.beginTransaction();
+		EmployeeEntity emp = defaultEmployee(employeeId);
+
+		Address address = new Address("id#a" + employeeId);
 		address.setPostcode(1111);
 		address.setStreet("first marvel street");
 		address.setHouseNo(11);
@@ -243,7 +249,6 @@ public class TestEnvers {
 		address.setPostcode(9999);
 		emp.setFirstName("9999");
 		save(session, emp);
-
 	}
 
 	private static void merge(Session session, Object... toPersist) {
@@ -308,19 +313,58 @@ public class TestEnvers {
 
 	}
 
-	public static void main(String[] args) {
+	/**
+	 * Verifying that when fetching old versions that references (returned as lazy loading proxies)
+	 * return also the right hisotrical version
+	 */
+	public static void compareDifferentFetchingMethods() {
+		// create entries with changing main and referenced object attributes
 		Session session = HibernateUtil.getSessionFactory().openSession();
+		createEmployeAndChangeAttributesAndReferencedAddress(session, 1222);
+		createEmployeAndChangeAttributesAndReferencedAddress(session, 1333);
+		session.close();
+
+		session = HibernateUtil.getSessionFactory().openSession();
+		final EmployeeEntity latesEmployeeEntityWithId = getLatesEmployeeEntityWithId(1222, session);
+		LOGGER.message().append("latestVersion Employee '1222'").newline()
+				.appendAsXml(latesEmployeeEntityWithId)
+				.appendAsXml(latesEmployeeEntityWithId.getAdress())
+				.logStdout()
+				.logInfo();
+		session.close();
+		session = HibernateUtil.getSessionFactory().openSession();
+		final EmployeeEntity entryInRevisionViaDirectQuery = getEntryInRevisionViaDirectQuery(EmployeeEntity.class, 1222, 1, session);
+		LOGGER.message().append("Version '1' Employee '1222' - directQuery").newline()
+				.appendAsXml(entryInRevisionViaDirectQuery)
+				.appendAsXml(initializeAndUnproxy(entryInRevisionViaDirectQuery.getAdress()))
+				.logStdout()
+				.logInfo();
+		session.close();
+		session = HibernateUtil.getSessionFactory().openSession();
+		final EmployeeEntity entryInRevisionViaListIteration = getEntryInRevisionViaListIteration(EmployeeEntity.class, 1222, 1, session);
+		LOGGER.message().append("Version '1' Employee '1222' - listQuery").newline()
+				.appendAsXml(entryInRevisionViaListIteration)
+				.appendAsXml(initializeAndUnproxy(entryInRevisionViaListIteration.getAdress()))
+				.logStdout()
+				.logInfo();
+		session.close();
+
+	}
+
+	public static void main(String[] args) {
+		// Session session = HibernateUtil.getSessionFactory().openSession();
 		// testAttributeChanges(session);
 		// testChangesToReferencedObject(session);
-		testChangeAttributesOfDifferentObjects(session);
-		session.close();
+		// testChangeAttributesOfDifferentObjects(session);
+		// session.close();
 
 		// testChangeToEmbbededObjects(session);
 		// testChangeToListOfEmbbededObjects(session);
 		// testFetchingOldObjectVersion(session);
-		session = HibernateUtil.getSessionFactory().openSession();
-		testRoleBackOfSingleObjectWithReferences(session);
+		// session = HibernateUtil.getSessionFactory().openSession();
+		// testRoleBackOfSingleObjectWithReferences(session);
 
+		compareDifferentFetchingMethods();
 		HibernateUtil.shutdown();
 	}
 }
