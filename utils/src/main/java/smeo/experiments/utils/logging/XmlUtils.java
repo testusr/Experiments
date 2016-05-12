@@ -1,4 +1,4 @@
-package smeo.experiments.playground.envers.common;
+package smeo.experiments.utils.logging;
 
 import com.thoughtworks.xstream.XStream;
 

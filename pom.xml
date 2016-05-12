@@ -9,6 +9,7 @@
     <module>aop-playground</module>
     <module>hibernate-playground</module>
     <module>hibernate-envers-playground</module>
+    <module>utils</module>
   </modules>
   <packaging>pom</packaging>
 

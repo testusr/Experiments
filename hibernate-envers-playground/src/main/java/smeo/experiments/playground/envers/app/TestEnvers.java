@@ -1,6 +1,5 @@
 package smeo.experiments.playground.envers.app;
 
-import org.apache.log4j.Logger;
 import org.hibernate.Hibernate;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -9,11 +8,11 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.proxy.HibernateProxy;
 import smeo.experiments.playground.envers.common.HibernateUtil;
-import smeo.experiments.playground.envers.common.XmlUtils;
 import smeo.experiments.playground.envers.model.Address;
 import smeo.experiments.playground.envers.model.EmbeddedPosition;
 import smeo.experiments.playground.envers.model.EmployeeEntity;
 import smeo.experiments.playground.envers.revisionentity.RevisionEntity;
+import smeo.experiments.utils.logging.LogMessageFactory;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ import java.util.List;
  */
 
 public class TestEnvers {
-	private static Logger LOGGER = Logger.getLogger(TestEnvers.class);
+	private static LogMessageFactory LOGGER = new LogMessageFactory(TestEnvers.class);
 
 	public static void testRoleBackOfSingleObjectWithReferences(Session session) {
 		// create object with references and changes to all objects
@@ -41,14 +40,11 @@ public class TestEnvers {
 
 		EmployeeEntity historicalEmployVersion = getEntryInRevisionViaListIteration(EmployeeEntity.class, 1, session);
 		session.beginTransaction();
-		printLog(historicalEmployVersion.getAdress());
-		printLog(historicalEmployVersion);
+		LOGGER.message().append("HistoricalEmplyVersion").newline()
+				.appendAsXml(historicalEmployVersion).logStdout();
 		merge(session, historicalEmployVersion);
 	}
 
-	private static void printLog(Object toPrint) {
-		LOGGER.info(XmlUtils.objectToXml(toPrint));
-	}
 
 	public static <T> T initializeAndUnproxy(T entity) {
 		if (entity == null) {
@@ -115,7 +111,8 @@ public class TestEnvers {
 		List<Object[]> listOfVersions = auditReader.createQuery()
 				.forRevisionsOfEntity(EmployeeEntity.class, false, true)
 				.getResultList();
-		StringBuilder message = new StringBuilder("#############################################\n");
+		final LogMessageFactory.LogMessage message = LOGGER.message();
+		message.append("#############################################\n");
 		message.append("## LIST OF VERSIONS:\n");
 
 		int lastVersion = 1;
@@ -135,7 +132,8 @@ public class TestEnvers {
 			}
 
 		}
-		LOGGER.info(message.toString());
+
+		message.logStdout();
 	}
 
 	/**

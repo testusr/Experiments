@@ -23,6 +23,7 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="aop-playground" />
+        <module name="utils" />
       </profile>
       <profile default="false" name="Annotation profile for hibernate-playground" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -44,6 +45,7 @@
       <module name="Experiments" target="1.5" />
       <module name="hibernate-envers-playground" target="1.7" />
       <module name="hibernate-playground" target="1.7" />
+      <module name="utils" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>
