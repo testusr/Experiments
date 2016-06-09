@@ -8,7 +8,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 /**
- * Created by truehl on 08.06.16.
+ * Simple example to marshal and unmarshal an object from to xml
  */
 public class JAXBExample {
 	public static void main(String[] args) {

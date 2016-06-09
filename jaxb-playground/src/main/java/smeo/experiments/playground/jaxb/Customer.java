@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Created by truehl on 08.06.16.
+ * JAXB annotated example class
  */
 @XmlRootElement
 public class Customer {

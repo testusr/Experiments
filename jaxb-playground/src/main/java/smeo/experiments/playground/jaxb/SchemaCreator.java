@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Created by truehl on 08.06.16.
+ * Creating a schema xsd from a annotated class and writing it to a file
  */
 public class SchemaCreator {
 	public static void main(String[] args) {
