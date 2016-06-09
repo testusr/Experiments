@@ -1,8 +1,8 @@
-package smeo.experiments.playground.envers.app;
+package smeo.experiments.playground.hibernate.app;
 
 import org.hibernate.Session;
-import smeo.experiments.playground.envers.common.HibernateUtil;
-import smeo.experiments.playground.envers.model.EmployeeEntity;
+import smeo.experiments.playground.hibernate.common.HibernateUtil;
+import smeo.experiments.playground.hibernate.model.EmployeeEntity;
 
 /**
  * Created by smeo on 09.05.16.
