@@ -10,6 +10,7 @@
     <module>hibernate-playground</module>
     <module>hibernate-envers-playground</module>
     <module>utils</module>
+    <module>jaxb-playground</module>
   </modules>
   <packaging>pom</packaging>
 
