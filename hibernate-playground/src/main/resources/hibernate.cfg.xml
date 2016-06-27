@@ -16,5 +16,8 @@
 
     <mapping class="smeo.experiments.playground.hibernate.model.EmployeeEntity"></mapping>
     <mapping class="smeo.experiments.playground.hibernate.model.embeddable.CollectionOfEmbeddables"></mapping>
+
+    <mapping class="smeo.experiments.playground.hibernate.model.superclass.AMappedSuperClass"></mapping>
+    <mapping class="smeo.experiments.playground.hibernate.model.superclass.DerivedClassChangingConstraint"></mapping>
   </session-factory>
 </hibernate-configuration>
