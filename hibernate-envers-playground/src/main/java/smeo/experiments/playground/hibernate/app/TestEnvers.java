@@ -1,4 +1,4 @@
-package smeo.experiments.playground.envers.app;
+package smeo.experiments.playground.hibernate.app;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Query;
@@ -7,11 +7,11 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.proxy.HibernateProxy;
-import smeo.experiments.playground.envers.common.HibernateUtil;
-import smeo.experiments.playground.envers.model.Address;
-import smeo.experiments.playground.envers.model.EmbeddedPosition;
-import smeo.experiments.playground.envers.model.EmployeeEntity;
-import smeo.experiments.playground.envers.revisionentity.RevisionEntity;
+import smeo.experiments.playground.hibernate.common.HibernateUtil;
+import smeo.experiments.playground.hibernate.model.Address;
+import smeo.experiments.playground.hibernate.model.EmbeddedPosition;
+import smeo.experiments.playground.hibernate.model.EmployeeEntity;
+import smeo.experiments.playground.hibernate.revisionentity.RevisionEntity;
 import smeo.experiments.utils.logging.LogMessageFactory;
 
 import java.util.List;

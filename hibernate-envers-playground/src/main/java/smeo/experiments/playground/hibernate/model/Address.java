@@ -1,4 +1,4 @@
-package smeo.experiments.playground.envers.model;
+package smeo.experiments.playground.hibernate.model;
 
 import org.hibernate.envers.Audited;
 

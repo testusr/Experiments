@@ -1,9 +1,9 @@
-package smeo.experiments.playground.envers.revisionentity;
+package smeo.experiments.playground.hibernate.revisionentity;
 
 import org.hibernate.envers.RevisionListener;
 
 /**
- * Listener that is automatically called by envers on every change.
+ * Listener that is automatically called by hibernate on every change.
  * A new RevisionEntity instance is passed to the listener to be enriched with
  * meta information for every change.
  * 

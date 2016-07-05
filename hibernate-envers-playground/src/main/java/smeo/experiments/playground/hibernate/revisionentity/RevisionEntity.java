@@ -1,4 +1,4 @@
-package smeo.experiments.playground.envers.revisionentity;
+package smeo.experiments.playground.hibernate.revisionentity;
 
 import org.hibernate.envers.DefaultRevisionEntity;
 

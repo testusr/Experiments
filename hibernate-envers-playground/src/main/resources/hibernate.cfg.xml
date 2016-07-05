@@ -22,7 +22,7 @@
     <property name="hibernate.connection.password"></property>
     <property name="hibernate.hbm2ddl.auto">create</property>
 
-    <!-- envers envers listeners 5.1.0.Final -->
+    <!-- hibernate hibernate listeners 5.1.0.Final -->
     <property name="hibernate.ejb.event.post-insert"
     >org.hibernate.ejb.event.EJB3PostInsertEventListener,org.hibernate.envers.event.AuditEventListener
     </property>
@@ -42,16 +42,16 @@
     >org.hibernate.envers.event.AuditEventListener
     </property>
 
-    <mapping class="smeo.experiments.playground.envers.model.EmployeeEntity"/>
-    <mapping class="smeo.experiments.playground.envers.model.Address"/>
-    <mapping class="smeo.experiments.playground.envers.revisionentity.RevisionEntity"/>
+    <mapping class="smeo.experiments.playground.hibernate.model.EmployeeEntity"/>
+    <mapping class="smeo.experiments.playground.hibernate.model.Address"/>
+    <mapping class="smeo.experiments.playground.hibernate.revisionentity.RevisionEntity"/>
 
     <!--hibernate.version>3.6.1.Final</hibernate.version-->
-    <!--listener class="org.hibernate.envers.event.AuditEventListener" type="post-insert"/>
-    <listener class="org.hibernate.envers.event.AuditEventListener" type="post-update"/>
-    <listener class="org.hibernate.envers.event.AuditEventListener" type="post-delete"/>
-    <listener class="org.hibernate.envers.event.AuditEventListener" type="pre-collection-update"/>
-    <listener class="org.hibernate.envers.event.AuditEventListener" type="pre-collection-remove"/>
-    <listener class="org.hibernate.envers.event.AuditEventListener" type="post-collection-recreate"/-->
+    <!--listener class="org.hibernate.hibernate.event.AuditEventListener" type="post-insert"/>
+    <listener class="org.hibernate.hibernate.event.AuditEventListener" type="post-update"/>
+    <listener class="org.hibernate.hibernate.event.AuditEventListener" type="post-delete"/>
+    <listener class="org.hibernate.hibernate.event.AuditEventListener" type="pre-collection-update"/>
+    <listener class="org.hibernate.hibernate.event.AuditEventListener" type="pre-collection-remove"/>
+    <listener class="org.hibernate.hibernate.event.AuditEventListener" type="post-collection-recreate"/-->
   </session-factory>
 </hibernate-configuration>

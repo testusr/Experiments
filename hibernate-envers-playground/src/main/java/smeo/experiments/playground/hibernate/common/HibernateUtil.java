@@ -1,4 +1,4 @@
-package smeo.experiments.playground.envers.common;
+package smeo.experiments.playground.hibernate.common;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
