@@ -10,6 +10,7 @@ import java.util.UUID;
  * Created by smeo on 16.07.16.
  */
 @Entity
+@Access(AccessType.FIELD)
 public class CollectionEntity {
     @Id
     private String id;

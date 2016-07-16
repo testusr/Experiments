@@ -23,6 +23,7 @@
     <mapping class="smeo.experiments.playground.hibernate.model.superclass.DerivedClassChangingConstraint"></mapping>
 
     <mapping class="smeo.experiments.playground.hibernate.model.collection.CollectionEntity"></mapping>
+    <mapping class="smeo.experiments.playground.hibernate.model.collection.CollectionEntityWithReference"></mapping>
     <mapping class="smeo.experiments.playground.hibernate.model.ValueEntity"></mapping>
 
   </session-factory>
