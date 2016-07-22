@@ -1,4 +1,4 @@
-package smeo.experiments.esper.priceaggregation.domain;
+package smeo.experiments.esper.priceaggregation.domain.transformation;
 
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPStatement;
@@ -6,6 +6,7 @@ import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
 import com.espertech.esper.event.map.MapEventBean;
 import org.apache.commons.lang3.Validate;
+import smeo.experiments.esper.priceaggregation.domain.AuditListener;
 import smeo.experiments.utils.jmx.MBeanBuilder;
 import smeo.experiments.utils.jmx.Managed;
 

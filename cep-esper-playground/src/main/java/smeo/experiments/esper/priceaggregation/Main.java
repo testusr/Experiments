@@ -4,7 +4,7 @@ import com.espertech.esper.client.Configuration;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
 import smeo.experiments.esper.priceaggregation.domain.AuditListener;
-import smeo.experiments.esper.priceaggregation.domain.PriceTransformation;
+import smeo.experiments.esper.priceaggregation.domain.transformation.PriceTransformation;
 import smeo.experiments.esper.priceaggregation.domain.event.Price;
 
 import java.util.Random;
@@ -51,7 +51,7 @@ public class Main {
 			epService.getEPRuntime().sendEvent(preallocatedPrices[index]);
 
 			try {
-				Thread.sleep(20);
+				Thread.sleep(1);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
