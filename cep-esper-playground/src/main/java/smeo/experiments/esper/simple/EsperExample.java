@@ -1,7 +1,7 @@
-package smeo.experiments.esper;
+package smeo.experiments.esper.simple;
 
 import com.espertech.esper.client.*;
-import smeo.experiments.esper.event.OrderEvent;
+import smeo.experiments.esper.simple.event.OrderEvent;
 
 /**
  * Created by truehl on 22.07.16.
@@ -9,7 +9,7 @@ import smeo.experiments.esper.event.OrderEvent;
 public class EsperExample {
 	public static void main(String[] args) {
 		Configuration config = new Configuration();
-		config.addEventTypeAutoName("smeo.experiments.esper.event");
+		config.addEventTypeAutoName("smeo.experiments.esper.simple.event");
 
 		EPServiceProvider epService = EPServiceProviderManager.getDefaultProvider(config);
 		String expression = "select avg(price) from OrderEvent.win:time(30 sec)";

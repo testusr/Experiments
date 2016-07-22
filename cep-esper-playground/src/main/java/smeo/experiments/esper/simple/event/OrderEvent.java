@@ -1,4 +1,4 @@
-package smeo.experiments.esper.event;
+package smeo.experiments.esper.simple.event;
 
 /**
  * Created by truehl on 22.07.16.
