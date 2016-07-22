@@ -3,9 +3,7 @@ package smeo.experiments.test.utils;
 import com.google.common.primitives.Primitives;
 import sun.misc.Unsafe;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -13,57 +11,129 @@ import java.util.*;
  */
 public class RandomClassInstanceGenerator<T> {
     private final int target_collection_size = 5;
+    private final int max_depth = 5;
     private Class<T> clazz;
     private static Random random = new Random();
-
+    private int currDepth = 0;
+    private static final Set<Class> primitiveWrappers = primitiveWrappers();
 
     <T> T generateClassInstance(Class<T> clazz) {
-        List<Field> allFields = getAllFields(clazz);
-        List<Field> collectionFields = filterCollections(allFields);
-        List<Field> valueFields = filterValueFields(allFields);
-        List<Field> objectReferences = filterObjectReferences(allFields);
+        currDepth++;
+        T instance = null;
+        try {
+            if (currDepth < max_depth) {
+                List<Field> allFields = getAllFields(clazz);
 
-        T instance = newInstance(clazz);
+                instance = newInstance(clazz);
 
-        fillValueFields(valueFields, instance);
+                fillValueFields(allFields, instance);
+                fillObjectReferences(allFields, instance);
+                fillCollectionFields(allFields, instance);
+            }
+        } finally {
+            currDepth--;
+        }
+
         return instance;
     }
 
-    private <T> void fillObjectReferences(List<Field> objectReferences, T instance) {
+    private <T> void fillObjectReferences(List<Field> fields, T instance) {
+        List<Field> objectReferences = filterObjectReferences(fields);
+
+        for (Field currReference : objectReferences) {
+            try {
+                currReference.set(instance, generateClassInstance(currReference.getType()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 
-    private <T> void fillCollectionFields(List<Field> collectionFields, T instance) {
+    private <T> void fillCollectionFields(List<Field> fields, T instance) {
+        List<Field> collectionFields = filterCollections(fields);
+        Iterator<Field> iField = collectionFields.iterator();
+
+        while (iField.hasNext()){
+            Field currField = iField.next();
+            if (List.class.isAssignableFrom(currField.getType())){
+                Class genericType = getGenericType(currField);
+            }
+        }
 
     }
 
-    private <T> void fillValueFields(List<Field> valueFields, T instance) {
+    private Class getGenericType(Field field) {
+        Type type = field.getGenericType();
+
+        if (type instanceof ParameterizedType) {
+
+            ParameterizedType pType = (ParameterizedType)type;
+            Type[] arr = pType.getActualTypeArguments();
+
+            if (arr.length > 0){
+                Class<?> clzz = (Class<?>) arr[0];
+                return clzz;
+            }
+        }
+        return null;
+
+    }
+
+    private static Set<Class> primitiveWrappers(){
+        Set<Class> primitives = new HashSet<Class>();
+        primitives.add(Number.class);
+        primitives.add(Character.class);
+        primitives.add(Byte.class);
+        primitives.add(Short.class);
+        primitives.add(String.class);
+        primitives.add(Boolean.class);
+        return primitives;
+    }
+    private <T> void fillValueFields(List<Field> allFields, T instance) {
+        List<Field> valueFields = filterValueFields(allFields);
+
         Iterator<Field> iterator = valueFields.iterator();
         while (iterator.hasNext()) {
             try {
 
                 Field currField = iterator.next();
                 Class<?> type = currField.getType();
-                if (type.isPrimitive()) {
-                    type = Primitives.wrap(type);
-                }
-                if (Number.class.isAssignableFrom(type)) {
-                    currField.set(instance, random.nextInt());
-                } else if (Character.class.isAssignableFrom(type)){
-                    currField.set(instance, 'A');
-                } else if (Byte.class.isAssignableFrom(type)){
-                    currField.set(instance, (byte)random.nextInt(Byte.MAX_VALUE));
-                } else if (Short.class.isAssignableFrom(type)){
-                    currField.set(instance, (short)random.nextInt(Short.MAX_VALUE));
-                } else if (String.class.isAssignableFrom(type)) {
-                    currField.set(instance, UUID.randomUUID().toString());
-                }
+                Object value = generatePrimitiveValue(type);
+                currField.set(instance, value);
 
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
 
         }
+    }
+
+    private Object generatePrimitiveValue(Class<?> type) {
+        Object value = null;
+        if (type.isPrimitive()) {
+            type = Primitives.wrap(type);
+        }
+        if (Long.class.isAssignableFrom(type)) {
+            value =random.nextLong();
+        } else if (Float.class.isAssignableFrom(type)) {
+            value =random.nextFloat();
+        } else if (Integer.class.isAssignableFrom(type)) {
+            value =random.nextInt();
+        } else if (Double.class.isAssignableFrom(type)) {
+            value =random.nextDouble();
+        } else if (Character.class.isAssignableFrom(type)){
+            value = new Character('A');
+        } else if (Byte.class.isAssignableFrom(type)){
+            value =(byte)random.nextInt(Byte.MAX_VALUE);
+        } else if (Short.class.isAssignableFrom(type)){
+            value =(short)random.nextInt(Short.MAX_VALUE);
+        } else if (String.class.isAssignableFrom(type)) {
+            value = UUID.randomUUID().toString();
+        } else if (Boolean.class.isAssignableFrom(type)){
+            value =random.nextBoolean();
+        }
+        return value;
     }
 
     /**
@@ -103,17 +173,39 @@ public class RandomClassInstanceGenerator<T> {
             }
 
         }
-        return null;
+        return instance;
     }
 
     private List<Field> filterObjectReferences(List<Field> allFields) {
-        return null;
+        Iterator<Field> iField = allFields.iterator();
+        List<Field> objectReferences = new ArrayList<Field>();
+        while(iField.hasNext()){
+            Field currField = iField.next();
+            if (!currField.getType().getName().startsWith("java.lang")){
+                 if (Object.class.isAssignableFrom(currField.getType())){
+                    objectReferences.add(currField);
+                     iField.remove();
+                 }
+            }
+        }
+
+        return objectReferences;
 
     }
 
     private List<Field> filterValueFields(List<Field> allFields) {
+        Iterator<Field> iField = allFields.iterator();
+        List<Field> valueFields = new ArrayList<Field>();
 
-        return null;
+        while (iField.hasNext()){
+            Field currField = iField.next();
+            if (Primitives.allPrimitiveTypes().contains(currField.getType())
+                || Primitives.isWrapperType(currField.getType())){
+                valueFields.add(currField);
+                iField.remove();
+            }
+        }
+        return valueFields;
     }
 
     /**
@@ -127,7 +219,7 @@ public class RandomClassInstanceGenerator<T> {
         Iterator<Field> iterator = allFields.iterator();
         while (iterator.hasNext()) {
             Field currField = iterator.next();
-            if (Collections.class.isAssignableFrom(currField.getType())) {
+            if (Collection.class.isAssignableFrom(currField.getType())) {
                 collections.add(currField);
                 iterator.remove();
             }
@@ -149,9 +241,10 @@ public class RandomClassInstanceGenerator<T> {
             for (int i = 0; i < declaredFields.length; i++) {
                 declaredFields[i].setAccessible(true);
                 allFields.add(declaredFields[i]);
-                currClass = currClass.getSuperclass();
             }
-        } while (currClass != Object.class);
+            currClass = currClass.getSuperclass();
+
+        } while (currClass != Object.class && currClass != null);
 
         return allFields;
     }
