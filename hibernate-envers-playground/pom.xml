@@ -50,7 +50,7 @@
       <version>${hibernate.version}</version>
     </dependency>
 
-    <!-- for JPA, use envers-entitymanager instead of envers-core -->
+    <!-- for JPA, use hibernate-entitymanager instead of hibernate-core -->
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
