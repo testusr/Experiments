@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/Experiments.iml" filepath="$PROJECT_DIR$/Experiments.iml" />
       <module fileurl="file://$PROJECT_DIR$/aop-playground/aop-playground.iml" filepath="$PROJECT_DIR$/aop-playground/aop-playground.iml" />
       <module fileurl="file://$PROJECT_DIR$/cep-esper-playground/cep-esper-playground.iml" filepath="$PROJECT_DIR$/cep-esper-playground/cep-esper-playground.iml" />
+      <module fileurl="file://$PROJECT_DIR$/chronicle-playground/chronicle-playground.iml" filepath="$PROJECT_DIR$/chronicle-playground/chronicle-playground.iml" />
       <module fileurl="file://$PROJECT_DIR$/hibernate-envers-playground/hibernate-envers-playground.iml" filepath="$PROJECT_DIR$/hibernate-envers-playground/hibernate-envers-playground.iml" />
       <module fileurl="file://$PROJECT_DIR$/hibernate-playground/hibernate-playground.iml" filepath="$PROJECT_DIR$/hibernate-playground/hibernate-playground.iml" />
       <module fileurl="file://$PROJECT_DIR$/jaxb-playground/jaxb-playground.iml" filepath="$PROJECT_DIR$/jaxb-playground/jaxb-playground.iml" />

@@ -24,6 +24,7 @@
         <processorPath useClasspath="true" />
         <module name="aop-playground" />
         <module name="cep-esper-playground" />
+        <module name="chronicle-playground" />
         <module name="hibernate-envers-playground" />
         <module name="hibernate-playground" />
         <module name="jaxb-playground" />
@@ -33,7 +34,8 @@
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
       <module name="aop-playground" target="1.5" />
-      <module name="cep-esper-playground" target="1.6" />
+      <module name="cep-esper-playground" target="1.5" />
+      <module name="chronicle-playground" target="1.5" />
       <module name="Experiments" target="1.5" />
       <module name="hibernate-envers-playground" target="1.7" />
       <module name="hibernate-playground" target="1.7" />

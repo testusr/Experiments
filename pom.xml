@@ -13,6 +13,7 @@
     <module>utils</module>
     <module>jaxb-playground</module>
     <module>cep-esper-playground</module>
+    <module>chronicle-playground</module>
   </modules>
   <packaging>pom</packaging>
 
