@@ -10,11 +10,20 @@ public class Customer {
 	private int String;
 	private String action;
 	private String type;
+	private String loadingType;
 	//getter and setter methods
+
+	Customer(){
+		System.out.println("Customer created");
+	}
 
 	@Autowired
 	public void setPerson(Person person) {
 		this.person = person;
+	}
+
+	public Person getPerson() {
+		return person;
 	}
 
 	public void setAction(String action) {
@@ -31,5 +40,13 @@ public class Customer {
 
 	public String getType() {
 		return type;
+	}
+
+	public void setLoadingType(java.lang.String loadingType) {
+		this.loadingType = loadingType;
+	}
+
+	public java.lang.String getLoadingType() {
+		return loadingType;
 	}
 }

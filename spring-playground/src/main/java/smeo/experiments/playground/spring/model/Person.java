@@ -8,6 +8,10 @@ public class Person {
     private String address;
     private String age;
 
+    Person(){
+        System.out.println("Person created");
+    }
+
     public void setName(String name) {
         this.name = name;
     }
