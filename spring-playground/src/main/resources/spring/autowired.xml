@@ -8,12 +8,12 @@
 
   <context:annotation-config/>
 
-  <bean id="CustomerBean" class="com.mkyong.common.Customer">
+  <bean id="CustomerBean" class="smeo.experiments.playground.spring.model.Customer">
     <property name="action" value="buy"/>
     <property name="type" value="1"/>
   </bean>
 
-  <bean id="PersonBean" class="com.mkyong.common.Person">
+  <bean id="PersonBean" class="smeo.experiments.playground.spring.model.Person">
     <property name="name" value="mkyong"/>
     <property name="address" value="address ABC"/>
     <property name="age" value="29"/>
