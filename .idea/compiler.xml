@@ -33,12 +33,12 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
-      <module name="aop-playground" target="1.5" />
-      <module name="cep-esper-playground" target="1.5" />
-      <module name="chronicle-playground" target="1.5" />
-      <module name="Experiments" target="1.5" />
-      <module name="hibernate-envers-playground" target="1.7" />
-      <module name="hibernate-playground" target="1.7" />
+      <module name="aop-playground" target="1.8" />
+      <module name="cep-esper-playground" target="1.8" />
+      <module name="chronicle-playground" target="1.8" />
+      <module name="Experiments" target="1.8" />
+      <module name="hibernate-envers-playground" target="1.8" />
+      <module name="hibernate-playground" target="1.8" />
       <module name="jaxb-playground" target="1.5" />
       <module name="spring-playground" target="1.8" />
       <module name="utils" target="1.5" />
