@@ -292,6 +292,27 @@ public class TestEnvers {
 	}
 
 	/**
+	 * Nice one. Hibernate envers will not support multiple changes on list of embeddables
+	 * and will die with a
+	 * "org.hibernate.NonUniqueObjectException: A different object with the same identifier value was
+	 * already associated with the session : [LIST_SUBPOSITIONS_AUD#{SETORDINAL=1, EmployeeEntity_employeeId=4,
+	 * REV=DefaultRevisionEntity(id = 1, revisionDate = Aug 25, 2016 7:23:25 PM), REVTYPE=ADD}]"
+	 * 
+	 * Exception. Starts to work when we add a @OrderColumn("someName") to the collection to persist the index.
+	 * 
+	 * @param session
+	 */
+	private static void testChangeToListOfEmbeddedObjectsInOneTransaction(Session session) {
+
+		session.beginTransaction();
+		EmployeeEntity emp = defaultEmployee(4);
+		emp.addSubPosition(new EmbeddedPosition("pos1", 11));
+		emp.addSubPosition(new EmbeddedPosition("pos2", 22));
+		emp.addSubPosition(new EmbeddedPosition("pos3", 33));
+		save(session, emp);
+	}
+
+	/**
 	 * Treated like regular attribute changes increase version by one
 	 */
 	private static void testChangeToEmbbededObjects(Session session) {
@@ -352,7 +373,7 @@ public class TestEnvers {
 	}
 
 	public static void main(String[] args) {
-		// Session session = HibernateUtil.getSessionFactory().openSession();
+		Session session = HibernateUtil.getSessionFactory().openSession();
 		// testAttributeChanges(session);
 		// testChangesToReferencedObject(session);
 		// testChangeAttributesOfDifferentObjects(session);
@@ -363,8 +384,8 @@ public class TestEnvers {
 		// testFetchingOldObjectVersion(session);
 		// session = HibernateUtil.getSessionFactory().openSession();
 		// testRoleBackOfSingleObjectWithReferences(session);
-
-		compareDifferentFetchingMethods();
+		testChangeToListOfEmbeddedObjectsInOneTransaction(session);
+		// compareDifferentFetchingMethods();
 		HibernateUtil.shutdown();
 	}
 }

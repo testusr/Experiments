@@ -34,6 +34,7 @@ public class EmployeeEntity implements Serializable {
 	private EmbeddedPosition mainPosition = EmbeddedPosition.none();
 
 	@ElementCollection
+	@OrderColumn(name = "index")
 	@CollectionTable(name = "LIST_SUBPOSITIONS")
 	List<EmbeddedPosition> subPositions = new ArrayList<>();
 
