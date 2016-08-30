@@ -17,6 +17,7 @@
     <module>jaxb-playground</module>
     <module>cep-esper-playground</module>
     <module>chronicle-playground</module>
+    <module>monitoring-playground</module>
   </modules>
 
   <properties>
