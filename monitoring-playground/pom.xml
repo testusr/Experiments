@@ -28,5 +28,16 @@
       <artifactId>influxdb-java</artifactId>
       <version>2.2</version>
     </dependency>
+
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient</artifactId>
+      <version>0.0.10</version>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient_pushgateway</artifactId>
+      <version>0.0.10</version>
+    </dependency>
   </dependencies>
 </project>
