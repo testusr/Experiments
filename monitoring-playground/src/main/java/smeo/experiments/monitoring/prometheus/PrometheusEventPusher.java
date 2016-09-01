@@ -9,10 +9,12 @@ import java.io.IOException;
 import java.util.Random;
 
 /**
- * Attempt to write a prometheu push exporter
+ * Attempt to write a prometheus push exporter
  * <p>
- * docker run -p 9090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
- * dockerun -d -p 9100:9100 --net="host" prom/node-exporter
+ * docker run -p 9090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml --name prometheus prom/prometheus
+ * docker run -d -p 9100:9100 -v "/proc:/host/proc" -v "/sys:/host/sys" -v "/:/rootfs" --net="host" --name prom_nodeexporter prom/node-exporter -collector.procfs /host/proc -collector.sysfs /host/proc -collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc)($|/)"
+ * docker run -d -p 9091:9091 --name prom_pushgateway prom/pushgateway
+ *
  */
 public class PrometheusEventPusher {
     static final Random random = new Random(System.currentTimeMillis());
@@ -33,6 +35,7 @@ public class PrometheusEventPusher {
     }
 
     public void reportMetaData() {
+        System.out.println("reporting metadata");
         int[] randomValues = randomValues(10, 10, 10, 20);
         printPrecentile(99.9, randomValues[3]);
         printPrecentile(99, randomValues[2]);
