@@ -18,6 +18,7 @@
     <module>cep-esper-playground</module>
     <module>chronicle-playground</module>
     <module>monitoring-playground</module>
+    <module>quickfixj-playground</module>
   </modules>
 
   <properties>

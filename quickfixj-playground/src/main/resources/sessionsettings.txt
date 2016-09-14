@@ -1,0 +1,22 @@
+[DEFAULT]# Settings which apply to all the Sessions.
+ConnectionType=initiator
+LogonTimeout=30
+ReconnectInterval=30
+ResetOnLogon=Y
+FileLogPath=C:\Work\QuickFIXJ\logs
+[SESSION]# Settings specifically for one session
+BeginString=FIX.4.2
+SenderCompID=THIS VALUE IS THE CLIENT ID
+TargetCompID=THIS VALUE IS THE FIX SERVER ID
+StartDay=sunday
+EndDay=friday
+StartTime=00:00:00
+EndTime=00:00:00
+HeartBtInt=30
+CheckLatency=N
+MaxLatency=240
+SocketConnectPort=PORT NUMBER OF THE SERVER
+SocketConnectHost=IP ADDRESS OF YOUR SERVER
+UseDataDictionary=Y
+DataDictionary=FIX42.xml
+FileStorePath=\tmp\sessioninfo
