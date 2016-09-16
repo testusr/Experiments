@@ -1,1 +1,25 @@
 https://mprabhat.me/2012/07/02/creating-a-fix-initiator-using-quickfixj/
+
+sessionsettings:
+
+
+    ConnectionType – This specifies if you are creating an acceptor (Server) or initiator (Client).
+    LogonTimeout – Time in seconds before your session will expire, keep sending heartbeat request if you don’t want it to expire.
+    ReconnectInterval – Time in seconds before reconnecting.
+    ResetOnLogon – FIX messages have a sequence ID, which shouldn’t be used for uniqueness as specification doesn’t guarantee anything about them. If Y is provided every time logon message is sent, server will reset the sequence.
+    FileLogPath – Path where logs will be written.
+    BeginString – Should always specifies your FIX version.
+    SenderCompID – A String which identifies client uniquely.
+     TargetCompID – A String which identifies Server uniquely.
+    Start and End Day – Start and End of your session if session is week long, used with Start and End Time.
+    Start and End Time – Time when session starts and ends.
+    HeartBtInt – Time in seconds which specifies the interval between heartbeat.
+    CheckLatency – If this is set to True then you have to provide MaxLatency, value should be large enough to cater to network latency.
+    SocketConnectPort – Port of FIX Server.
+    SocketConnectHost – IP Address of the FIX Server.
+    UseDataDictionary – Specifies if data dictionary will be used.
+    FileStorePath – Session info will be saved here.
+
+
+http://vvratha.blogspot.de/2012/06/writing-simple-fix-initiator-and.html
+http://stackoverflow.com/questions/11828979/how-can-i-send-and-receive-messages-on-quickfix

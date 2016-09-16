@@ -7,9 +7,9 @@ import quickfix.fix42.NewOrderSingle;
 import java.util.Date;
 
 /**
- * Created by smeo on 13.09.16.
+ * Created by smeo on 16.09.16.
  */
-public class QuickFixJApp implements Application {
+public class InitiatorApp implements Application {
     @Override
     public void onCreate(SessionID sessionID) {
         System.out.println("on create sessionId: " + sessionID);
@@ -21,14 +21,15 @@ public class QuickFixJApp implements Application {
         executeOrder(sessionID);
     }
 
-    private void executeOrder(SessionID sessionID) {
+    private boolean executeOrder(SessionID sessionID) {
         System.out.println("sending order message.......");
         NewOrderSingle order = new NewOrderSingle(new ClOrdID("MISYS1001"),
                 new HandlInst(HandlInst.MANUAL_ORDER), new Symbol("MISYS"), new Side(Side.BUY), new TransactTime(new Date()), new OrdType(OrdType.LIMIT));
         try {
-            Session.sendToTarget(order, sessionID);
+            return Session.sendToTarget(order, sessionID);
         } catch (SessionNotFound sessionNotFound) {
             sessionNotFound.printStackTrace();
+            return false;
         }
     }
 
@@ -52,8 +53,19 @@ public class QuickFixJApp implements Application {
     @Override
     public void toApp(Message message, SessionID sessionID) throws DoNotSend {
         System.out.println("toApp\n message : "+message+"\n , sessionID: " +sessionID);
-
+        try {
+            boolean result = executeOrder(sessionID);
+                    //quickfix.Session.sendToTarget(message, sessionID);
+            if (result) {
+                System.out.println("Message ahs send :)");
+            } else {
+                System.out.println("Not Send");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 
     @Override
     public void fromApp(Message message, SessionID sessionID) throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {

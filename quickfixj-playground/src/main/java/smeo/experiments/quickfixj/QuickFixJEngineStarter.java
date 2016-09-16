@@ -20,10 +20,10 @@ public class QuickFixJEngineStarter {
         MessageStoreFactory storeFactory = new FileStoreFactory(settings);
         LogFactory logFactory = new FileLogFactory(settings);
         MessageFactory messageFactory = new DefaultMessageFactory();
-        Acceptor acceptor = new SocketAcceptor
+        /*Acceptor acceptor = new SocketAcceptor
                 (application, storeFactory, settings, logFactory, messageFactory);
         acceptor.start();
         // while(condition == true) { do something; }
-        acceptor.stop();
+        acceptor.stop();*/
     }
 }

@@ -1,9 +1,14 @@
 [DEFAULT]# Settings which apply to all the Sessions.
+
+# type of connection acceptor (Server) or initiator (Client)
 ConnectionType=initiator
 LogonTimeout=30
 ReconnectInterval=30
+
+# if Y server will reset the message sequence on each logon
 ResetOnLogon=Y
-FileLogPath=C:\Work\QuickFIXJ\logs
+
+FileLogPath=\tmp\quickfixj\logs
 [SESSION]# Settings specifically for one session
 BeginString=FIX.4.2
 SenderCompID=THIS VALUE IS THE CLIENT ID
@@ -13,10 +18,14 @@ EndDay=friday
 StartTime=00:00:00
 EndTime=00:00:00
 HeartBtInt=30
+
 CheckLatency=N
 MaxLatency=240
-SocketConnectPort=PORT NUMBER OF THE SERVER
-SocketConnectHost=IP ADDRESS OF YOUR SERVER
+# SERVER CONNECTION DETAILS
+SocketConnectPort=9001
+SocketConnectHost=127.0.0.1
 UseDataDictionary=Y
 DataDictionary=FIX42.xml
-FileStorePath=\tmp\sessioninfo
+FileStorePath=\tmp\quickfixj\sessioninfo
+
+# Documentation: http://www.quickfixengine.org/quickfix/doc/html/configuration.html
