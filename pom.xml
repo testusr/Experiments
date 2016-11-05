@@ -19,6 +19,7 @@
     <module>chronicle-playground</module>
     <module>monitoring-playground</module>
     <module>quickfixj-playground</module>
+    <module>network-playground</module>
   </modules>
 
   <properties>

@@ -18,7 +18,7 @@ public class InitiatorApp implements Application {
     @Override
     public void onLogon(SessionID sessionID) {
         System.out.println("on logon sessionID: " + sessionID);
-        executeOrder(sessionID);
+       // executeOrder(sessionID);
     }
 
     private boolean executeOrder(SessionID sessionID) {
@@ -53,7 +53,7 @@ public class InitiatorApp implements Application {
     @Override
     public void toApp(Message message, SessionID sessionID) throws DoNotSend {
         System.out.println("toApp\n message : "+message+"\n , sessionID: " +sessionID);
-        try {
+      /*  try {
             boolean result = executeOrder(sessionID);
                     //quickfix.Session.sendToTarget(message, sessionID);
             if (result) {
@@ -63,7 +63,7 @@ public class InitiatorApp implements Application {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
 
