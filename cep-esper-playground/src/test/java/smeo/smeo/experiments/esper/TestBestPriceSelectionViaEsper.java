@@ -1,5 +1,6 @@
 package smeo.smeo.experiments.esper;
 
+import org.junit.Ignore;
 import smeo.experiments.esper.event.Quote;
 import smeo.experiments.esper.event.QuoteBuilder;
 
@@ -9,6 +10,7 @@ import java.util.List;
 /**
  * Created by truehl on 25.07.16.
  */
+@Ignore
 public class TestBestPriceSelectionViaEsper {
 	private List<Quote> incomingQuoteList = new ArrayList<Quote>();
 	private EsperTestFixture esperTestFixture = new EsperTestFixture();
