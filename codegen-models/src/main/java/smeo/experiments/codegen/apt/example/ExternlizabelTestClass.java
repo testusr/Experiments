@@ -9,6 +9,8 @@ import java.io.ObjectOutput;
  * Created by smeo on 26.12.16.
  */
 public class ExternlizabelTestClass implements Externalizable {
+    long subclassPrimitive;
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
 

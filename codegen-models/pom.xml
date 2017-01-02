@@ -23,8 +23,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <annotationProcessors>
-                        <annotationProcessor>
-                            smeo.experiments.codegen.apt.ComplexityProcessor
+                        <annotationProcessor>smeo.experiments.codegen.apt.ComplexityProcessor</annotationProcessor>
+                        <annotationProcessor>smeo.experiments.codegen.apt.EfficientAnnotationProcessor
                         </annotationProcessor>
                     </annotationProcessors>
                     <verbose>true</verbose>

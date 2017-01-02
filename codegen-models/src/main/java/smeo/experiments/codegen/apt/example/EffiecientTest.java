@@ -2,8 +2,6 @@ package smeo.experiments.codegen.apt.example;
 
 import smeo.experiments.codegen.apt.Efficient;
 
-import java.io.Externalizable;
-
 /**
  * Created by smeo on 26.12.16.
  */
@@ -12,5 +10,8 @@ import java.io.Externalizable;
 public class EffiecientTest {
     String string;
     String[] array;
+    ExternlizabelTestClass externalizable;
+    Long longObject;
+    long longPrimitive;
 
 }
