@@ -5,12 +5,10 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
@@ -33,12 +31,16 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         System.err.println("EfficientAnnotationProcessor was called");
 
+        final Map<String, String> options = processingEnv.getOptions();
+        final Filer filer = processingEnv.getFiler();
+
         File sourcePath = new File("src");
         String fqClassName = null;
         String className = null;
         String packageName = null;
         Map<String, VariableElement> fields = new HashMap<String, VariableElement>();
         Map<String, ExecutableElement> methods = new HashMap<String, ExecutableElement>();
+
 
         for (Element e : roundEnv.getElementsAnnotatedWith(Efficient.class)) {
 
@@ -49,10 +51,27 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
                 final List<? extends Element> enclosedElements = e.getEnclosedElements();
 
+
+                final MethodSpec.Builder writeExternalMethod = MethodSpec.methodBuilder("writeExternal")
+                        .addParameter(ObjectOutput.class, "out", Modifier.FINAL)
+                        .addException(IOException.class)
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(void.class);
+
+                final MethodSpec.Builder readExternalMethod = MethodSpec.methodBuilder("readExternal")
+                        .addParameter(ObjectInput.class, "in", Modifier.FINAL)
+                        .addException(IOException.class)
+                        .addException(ClassNotFoundException.class)
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(void.class);
+
+
                 StringBuilder writeExernalMessageBody = new StringBuilder();
                 StringBuilder readExernalMessageBody = new StringBuilder();
                 for (Element currElement : enclosedElements) {
-                    appendWriteExternalCommand(writeExernalMessageBody, readExernalMessageBody, currElement);
+                    appendWriteExternalCommand(writeExternalMethod, readExternalMethod, currElement);
                 }
 
                 processingEnv.getMessager().printMessage(
@@ -63,35 +82,21 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
                 className = classElement.getSimpleName().toString();
                 packageName = packageElement.getQualifiedName().toString();
 
-                final MethodSpec writeExternal = MethodSpec.methodBuilder("writeExternal")
-                        .addParameter(ObjectOutput.class, "out", Modifier.FINAL)
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .addStatement(writeExernalMessageBody.toString())
-                        .returns(void.class)
-                        .build();
-
-                final MethodSpec readExternal = MethodSpec.methodBuilder("readExternal")
-                        .addParameter(ObjectInput.class, "in", Modifier.FINAL)
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .addStatement(readExernalMessageBody.toString())
-                        .returns(void.class)
-                        .build();
-
 
                 TypeSpec efficientVersion = TypeSpec.classBuilder("GenEfficient" + className)
                         .addModifiers(Modifier.PUBLIC)
                         .superclass(TypeName.get(e.asType()))
                         .addSuperinterface(Externalizable.class)
-                        .addMethod(writeExternal)
-                        .addMethod(readExternal)
+                        .addMethod(writeExternalMethod.build())
+                        .addMethod(readExternalMethod.build())
                         .build();
 
 
-                JavaFile javaFile = JavaFile.builder(packageName, efficientVersion).build();
+                JavaFile javaFile = JavaFile.builder(packageName, efficientVersion)
+                        //.indent("   ")
+                        .build();
                 try {
-                    javaFile.writeTo(sourcePath);
+                    javaFile.writeTo(filer);
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -123,7 +128,7 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
     // http://hauchee.blogspot.de/2015/12/compile-time-annotation-processing-getting-class-value.html
     // http://www.programcreek.com/java-api-examples/index.php?api=javax.lang.model.type.TypeMirror
-    private void appendWriteExternalCommand(StringBuilder writeExternalMsgBody, StringBuilder readExternalMsgBody, Element currElement) {
+    private void appendWriteExternalCommand(MethodSpec.Builder writeExternalMethod, MethodSpec.Builder readExternalMethod, Element currElement) {
         final ElementKind kind = currElement.getKind();
 
         if (ElementKind.FIELD.equals(kind)) {
@@ -132,46 +137,116 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
             final Class<? extends Element> aClass = currElement.getClass();
             final TypeKind kind1 = typeMirror.getKind();
-            final String s = typeMirror.toString();
+            final String className = typeMirror.toString();
             final String name = aClass.getName();
             final Field[] declaredFields = aClass.getDeclaredFields();
             final boolean primitive = aClass.isPrimitive();
             final Name simpleName = currElement.getSimpleName();
 
-            if (TypeKind.LONG.equals(kind1) || s.equals(Long.class.getName())) {
-                writeExternalMsgBody.append("out.writeLong(" + simpleName + ");\n");
-                readExternalMsgBody.append(simpleName + " = in.readLong();\n");
-            } else if (TypeKind.DOUBLE.equals(kind1) || s.equals(Double.class.getName())) {
-                writeExternalMsgBody.append("out.writeDouble(" + simpleName + ");\n");
-                readExternalMsgBody.append(simpleName + " = in.readDouble();\n");
-            } else if (TypeKind.FLOAT.equals(kind1) || s.equals(Float.class.getName())) {
-                writeExternalMsgBody.append("out.writeFloat(" + simpleName + ");\n");
-                readExternalMsgBody.append(simpleName + " = in.readFloat();\n");
-            } else if (TypeKind.BOOLEAN.equals(kind1) || s.equals(Boolean.class.getName())) {
-                writeExternalMsgBody.append("out.writeBoolean(" + simpleName + ");\n");
-                readExternalMsgBody.append(simpleName + " = in.readBoolean();\n");
-            } else if (TypeKind.INT.equals(kind1) || s.equals(Integer.class.getName())) {
-                writeExternalMsgBody.append("out.writeInt(" + simpleName + ");\n");
-                readExternalMsgBody.append(simpleName + " = in.readInt();\n");
-            } else if (TypeKind.SHORT.equals(kind1) || s.equals(Short.class.getName())) {
-                writeExternalMsgBody.append("out.writeShort(" + simpleName + ");\n");
-                readExternalMsgBody.append(simpleName + " = in.readShort();\n");
-            } else if (TypeKind.CHAR.equals(kind1) || s.equals(Character.class.getName())) {
-                writeExternalMsgBody.append("out.writeChar(" + simpleName + ");\n");
-                readExternalMsgBody.append(simpleName + " = in.readChar();\n");
-            } else if (implementesInterface(typeMirror, Externalizable.class)) {
-                writeExternalMsgBody.append(simpleName + ".writeExternal(out);\n");
-                readExternalMsgBody.append(simpleName + ".readExternal(in);\n");
-            } else if (implementesInterface(typeMirror, Serializable.class)) {
-                writeExternalMsgBody.append("out.writeObject(" + simpleName + ");\n");
-                readExternalMsgBody.append(simpleName + " = in.readObject();\n");
-            } else {
-                throw new IllegalArgumentException("cannot determine how to externalize object '" + simpleName + ":+" + typeMirror.toString() + "'");
+            if (!currElement.getModifiers().contains(Modifier.TRANSIENT)) {
+                if (kind1.equals(TypeKind.ARRAY)) {
+                    writeArray(writeExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, simpleName.toString());
+                    readArray(readExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, simpleName.toString());
+                } else {
+                    writeExternalMethod.addStatement(createWriteStatement(typeMirror, kind1, simpleName.toString()));
+                    readExternalMethod.addStatement(createReadStatement(typeMirror, kind1, simpleName.toString()));
+                }
+
             }
         }
     }
 
-    private boolean implementesInterface(TypeMirror typeMirror, Class<?> interfc) {
+    private void readArray(MethodSpec.Builder readExternalMsgBody, TypeMirror typeMirror, TypeKind kind1, String simpleName) {
+        String fieldArrayLength = simpleName + "Length";
+        String indexName = "i";
+
+        readExternalMsgBody.addStatement("int " + fieldArrayLength + "=in.readInt();");
+        readExternalMsgBody.beginControlFlow("for (int i=0; i < " + fieldArrayLength + "; i++)");
+        readExternalMsgBody.addStatement(createReadStatement(typeMirror, kind1, (simpleName + "[" + indexName + "]")));
+        readExternalMsgBody.endControlFlow();
+    }
+
+    private void writeArray(MethodSpec.Builder writeExternalMsgBody, TypeMirror typeMirror, TypeKind kind1, String simpleName) {
+        String fieldArrayLength = simpleName + "Length";
+        String indexName = "i";
+
+        writeExternalMsgBody.addStatement("int " + fieldArrayLength + " = 0");
+        writeExternalMsgBody.beginControlFlow("if (" + simpleName + " != null)");
+        writeExternalMsgBody.addStatement(fieldArrayLength + "= " + simpleName + ".length");
+        writeExternalMsgBody.endControlFlow();
+        writeExternalMsgBody.addStatement("out.writeInt(" + fieldArrayLength + ")");
+        writeExternalMsgBody.beginControlFlow("for (int i=0; " + indexName + " <  " + fieldArrayLength + "; " + indexName + "++)");
+        writeExternalMsgBody.addStatement(createWriteStatement(typeMirror, kind1, simpleName));
+        writeExternalMsgBody.endControlFlow();
+    }
+
+
+    private String createWriteStatement(TypeMirror currType, TypeKind kind1, String simpleName) {
+        return appendWriteStatement(new StringBuilder(), currType, kind1, simpleName).toString();
+    }
+
+    private String createReadStatement(TypeMirror currType, TypeKind kind1, String simpleName) {
+        return appendReadStatement(new StringBuilder(), currType, kind1, simpleName).toString();
+    }
+
+    private StringBuilder appendWriteStatement(StringBuilder statement, TypeMirror currType, TypeKind kind1, String simpleName) {
+        if (TypeKind.LONG.equals(kind1) || isAssignable(currType, Long.class)) {
+            statement.append("out.writeLong(" + simpleName + ")");
+        } else if (TypeKind.DOUBLE.equals(kind1) || isAssignable(currType, Double.class)) {
+            statement.append("out.writeDouble(" + simpleName + ")");
+        } else if (TypeKind.FLOAT.equals(kind1) || isAssignable(currType, Float.class)) {
+            statement.append("out.writeFloat(" + simpleName + ")");
+        } else if (TypeKind.BOOLEAN.equals(kind1) || isAssignable(currType, Boolean.class)) {
+            statement.append("out.writeBoolean(" + simpleName + ")");
+        } else if (TypeKind.INT.equals(kind1) || isAssignable(currType, Integer.class)) {
+            statement.append("out.writeInt(" + simpleName + ")");
+        } else if (TypeKind.SHORT.equals(kind1) || isAssignable(currType, Short.class)) {
+            statement.append("out.writeShort(" + simpleName + ")");
+        } else if (TypeKind.CHAR.equals(kind1) || isAssignable(currType, Character.class)) {
+            statement.append("out.writeChar(" + simpleName + ")");
+        } else if (implementsInterface(currType, Externalizable.class)) {
+            statement.append(simpleName + ".writeExternal(out)");
+        } else if (implementsInterface(currType, Serializable.class)) {
+            statement.append("out.writeObject(" + simpleName + ")");
+        } else {
+            throw new IllegalArgumentException("cannot determine how to externalize object '" + simpleName + ":+" + currType.toString() + "'");
+        }
+        return statement;
+    }
+
+    private StringBuilder appendReadStatement(StringBuilder statement, TypeMirror currType, TypeKind kind1, String simpleName) {
+        if (TypeKind.LONG.equals(kind1) || isAssignable(currType, Long.class)) {
+            statement.append(simpleName + " = in.readLong()");
+        } else if (TypeKind.DOUBLE.equals(kind1) || isAssignable(currType, Double.class)) {
+            statement.append(simpleName + " = in.readDouble()");
+        } else if (TypeKind.FLOAT.equals(kind1) || isAssignable(currType, Float.class)) {
+            statement.append(simpleName + " = in.readFloat()");
+        } else if (TypeKind.BOOLEAN.equals(kind1) || isAssignable(currType, Boolean.class)) {
+            statement.append(simpleName + " = in.readBoolean()");
+        } else if (TypeKind.INT.equals(kind1) || isAssignable(currType, Integer.class)) {
+            statement.append(simpleName + " = in.readInt()");
+        } else if (TypeKind.SHORT.equals(kind1) || isAssignable(currType, Short.class)) {
+            statement.append(simpleName + " = in.readShort()");
+        } else if (TypeKind.CHAR.equals(kind1) || isAssignable(currType, Character.class)) {
+            statement.append(simpleName + " = in.readChar()");
+        } else if (implementsInterface(currType, Externalizable.class)) {
+            statement.append(simpleName + ".readExternal(in)");
+        } else if (implementsInterface(currType, Serializable.class)) {
+            statement.append(simpleName + " = (" + currType + ") in.readObject()");
+        } else {
+            throw new IllegalArgumentException("cannot determine how to externalize object '" + simpleName + ":+" + currType.toString() + "'");
+        }
+        return statement;
+    }
+
+    private boolean isAssignable(TypeMirror typeMirror, Class<?> interfc) {
+        final TypeMirror externalizableTypeMirror = processingEnv.getElementUtils()
+                .getTypeElement(interfc.getName()).asType();
+
+        return processingEnv.getTypeUtils().isAssignable(typeMirror, externalizableTypeMirror);
+    }
+
+    private boolean implementsInterface(TypeMirror typeMirror, Class<?> interfc) {
         final TypeMirror externalizableTypeMirror = processingEnv.getElementUtils()
                 .getTypeElement(interfc.getName()).asType();
 
