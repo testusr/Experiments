@@ -34,7 +34,6 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
         final Map<String, String> options = processingEnv.getOptions();
         final Filer filer = processingEnv.getFiler();
 
-        File sourcePath = new File("src");
         String fqClassName = null;
         String className = null;
         String packageName = null;
@@ -83,7 +82,7 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
                 packageName = packageElement.getQualifiedName().toString();
 
 
-                TypeSpec efficientVersion = TypeSpec.classBuilder("GenEfficient" + className)
+                TypeSpec efficientVersion = TypeSpec.classBuilder("Efficient" + className)
                         .addModifiers(Modifier.PUBLIC)
                         .superclass(TypeName.get(e.asType()))
                         .addSuperinterface(Externalizable.class)
@@ -176,7 +175,7 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
         writeExternalMsgBody.endControlFlow();
         writeExternalMsgBody.addStatement("out.writeInt(" + fieldArrayLength + ")");
         writeExternalMsgBody.beginControlFlow("for (int i=0; " + indexName + " <  " + fieldArrayLength + "; " + indexName + "++)");
-        writeExternalMsgBody.addStatement(createWriteStatement(typeMirror, kind1, simpleName));
+        writeExternalMsgBody.addStatement(createWriteStatement(typeMirror, kind1, (simpleName + "[" + indexName + "]")));
         writeExternalMsgBody.endControlFlow();
     }
 
