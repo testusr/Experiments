@@ -12,6 +12,7 @@ import java.util.Set;
 
 /**
  * https://deors.wordpress.com/2011/10/08/annotation-processors/
+ * http://hannesdorfmann.com/annotation-processing/annotationprocessing101
  */
 @SupportedAnnotationTypes("smeo.experiments.codegen.apt.Complexity")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
