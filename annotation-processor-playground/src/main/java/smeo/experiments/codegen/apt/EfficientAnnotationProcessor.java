@@ -14,10 +14,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Naiv Example implementation to generate efficient
@@ -40,89 +37,157 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
         Map<String, VariableElement> fields = new HashMap<String, VariableElement>();
         Map<String, ExecutableElement> methods = new HashMap<String, ExecutableElement>();
 
+        List<VariableElement> fieldsToProcess = new ArrayList<VariableElement>();
+
 
         for (Element e : roundEnv.getElementsAnnotatedWith(Efficient.class)) {
+            if (!processClass(filer, e)) {
+                if (e.getKind() == ElementKind.FIELD) {
 
-            if (e.getKind() == ElementKind.CLASS) {
+                    VariableElement varElement = (VariableElement) e;
 
-                TypeElement classElement = (TypeElement) e;
-                PackageElement packageElement = (PackageElement) classElement.getEnclosingElement();
+                    processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.NOTE,
+                            "annotated field: " + varElement.getSimpleName(), e);
 
-                final List<? extends Element> enclosedElements = e.getEnclosedElements();
+                    fields.put(varElement.getSimpleName().toString(), varElement);
 
+                } else if (e.getKind() == ElementKind.METHOD) {
 
-                final MethodSpec.Builder writeExternalMethod = MethodSpec.methodBuilder("writeExternal")
-                        .addParameter(ObjectOutput.class, "out", Modifier.FINAL)
-                        .addException(IOException.class)
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(void.class);
+                    ExecutableElement exeElement = (ExecutableElement) e;
 
-                final MethodSpec.Builder readExternalMethod = MethodSpec.methodBuilder("readExternal")
-                        .addParameter(ObjectInput.class, "in", Modifier.FINAL)
-                        .addException(IOException.class)
-                        .addException(ClassNotFoundException.class)
-                        .addAnnotation(Override.class)
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(void.class);
+                    processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.NOTE,
+                            "annotated method: " + exeElement.getSimpleName(), e);
 
-
-                StringBuilder writeExernalMessageBody = new StringBuilder();
-                StringBuilder readExernalMessageBody = new StringBuilder();
-                for (Element currElement : enclosedElements) {
-                    appendWriteExternalCommand(writeExternalMethod, readExternalMethod, currElement);
+                    methods.put(exeElement.getSimpleName().toString(), exeElement);
                 }
-
-                processingEnv.getMessager().printMessage(
-                        Diagnostic.Kind.NOTE,
-                        "annotated class: " + classElement.getQualifiedName(), e);
-
-                fqClassName = classElement.getQualifiedName().toString();
-                className = classElement.getSimpleName().toString();
-                packageName = packageElement.getQualifiedName().toString();
-
-
-                TypeSpec efficientVersion = TypeSpec.classBuilder("Efficient" + className)
-                        .addModifiers(Modifier.PUBLIC)
-                        .superclass(TypeName.get(e.asType()))
-                        .addSuperinterface(Externalizable.class)
-                        .addMethod(writeExternalMethod.build())
-                        .addMethod(readExternalMethod.build())
-                        .build();
-
-
-                JavaFile javaFile = JavaFile.builder(packageName, efficientVersion)
-                        //.indent("   ")
-                        .build();
-                try {
-                    javaFile.writeTo(filer);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-
-
-            } else if (e.getKind() == ElementKind.FIELD) {
-
-                VariableElement varElement = (VariableElement) e;
-
-                processingEnv.getMessager().printMessage(
-                        Diagnostic.Kind.NOTE,
-                        "annotated field: " + varElement.getSimpleName(), e);
-
-                fields.put(varElement.getSimpleName().toString(), varElement);
-
-            } else if (e.getKind() == ElementKind.METHOD) {
-
-                ExecutableElement exeElement = (ExecutableElement) e;
-
-                processingEnv.getMessager().printMessage(
-                        Diagnostic.Kind.NOTE,
-                        "annotated method: " + exeElement.getSimpleName(), e);
-
-                methods.put(exeElement.getSimpleName().toString(), exeElement);
             }
         }
         return true;
+    }
+
+    private boolean processClass(Filer filer, Element e) {
+        if (e.getKind() == ElementKind.CLASS) {
+
+            String fqClassName;
+            String className;
+            String packageName;
+            TypeElement classElement = (TypeElement) e;
+            PackageElement packageElement = (PackageElement) classElement.getEnclosingElement();
+
+            final List<? extends Element> enclosedElements = e.getEnclosedElements();
+
+
+            final MethodSpec.Builder writeExternalMethod = MethodSpec.methodBuilder("writeExternal")
+                    .addParameter(ObjectOutput.class, "out", Modifier.FINAL)
+                    .addException(IOException.class)
+                    .addAnnotation(Override.class)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(void.class);
+
+            final MethodSpec.Builder readExternalMethod = MethodSpec.methodBuilder("readExternal")
+                    .addParameter(ObjectInput.class, "in", Modifier.FINAL)
+                    .addException(IOException.class)
+                    .addException(ClassNotFoundException.class)
+                    .addAnnotation(Override.class)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(void.class);
+
+
+            StringBuilder writeExernalMessageBody = new StringBuilder();
+            StringBuilder readExernalMessageBody = new StringBuilder();
+
+            List<VariableElement> fieldsToProcess = extractFields(enclosedElements);
+            int i = 0;
+            while (!fieldsToProcess.isEmpty()) {
+                VariableElement currField = fieldsToProcess.get(i++ % fieldsToProcess.size());
+                verifyDependentFieldsAreAlreadySerialized(currField, fieldsToProcess);
+                //  if (!verifyDependentFieldsAreAlreadySerialized(currField, fieldsToProcess)) {
+                appendWriteExternalCommand(writeExternalMethod, readExternalMethod, currField);
+                fieldsToProcess.remove(currField);
+//                }
+            }
+
+            processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.NOTE,
+                    "annotated class: " + classElement.getQualifiedName(), e);
+
+            fqClassName = classElement.getQualifiedName().toString();
+            className = classElement.getSimpleName().toString();
+            packageName = packageElement.getQualifiedName().toString();
+
+
+            TypeSpec efficientVersion = TypeSpec.classBuilder("Efficient" + className)
+                    .addModifiers(Modifier.PUBLIC)
+                    .superclass(TypeName.get(e.asType()))
+                    .addSuperinterface(Externalizable.class)
+                    .addMethod(writeExternalMethod.build())
+                    .addMethod(readExternalMethod.build())
+                    .build();
+
+
+            JavaFile javaFile = JavaFile.builder(packageName, efficientVersion)
+                    //.indent("   ")
+                    .build();
+            try {
+                javaFile.writeTo(filer);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private String getFieldReflectingCurrentArraySize(Element arrayField) {
+        final List<? extends Element> enclosedElements = arrayField.getEnclosedElements();
+        for (AnnotationMirror currAnnotation : arrayField.getAnnotationMirrors()) {
+            if (isAssignable(currAnnotation.getAnnotationType(), EfficientArray.class)) {
+                final Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = currAnnotation.getElementValues();
+                for (ExecutableElement currElement : elementValues.keySet()) {
+                    if ("sizeField".equals(currElement.getSimpleName().toString())) {
+                        final AnnotationValue annotationValue = elementValues.get(currElement);
+                        return (String) annotationValue.getValue();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private void verifyDependentFieldsAreAlreadySerialized(VariableElement field, List<VariableElement> fieldsToProcess) {
+        String arraySizeField = getFieldReflectingCurrentArraySize(field);
+        if (arraySizeField != null) {
+            if (containsFieldWithName(arraySizeField, fieldsToProcess)) {
+                final String errorMessage = "annotated array '" + field.getSimpleName() + "' depends on value '"
+                        + arraySizeField + "' which has to be externalized first. please reorder the attributes " +
+                        "accordingly";
+                processingEnv.getMessager().printMessage(
+                        Diagnostic.Kind.ERROR,
+                        errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
+        }
+    }
+
+    private boolean containsFieldWithName(String fieldName, List<VariableElement> fieldList) {
+        for (VariableElement currVariable : fieldList) {
+            if (currVariable.getSimpleName().toString().equals(fieldName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<VariableElement> extractFields(List<? extends Element> enclosedElements) {
+        List<VariableElement> fields = new ArrayList<VariableElement>();
+        for (Element e : enclosedElements) {
+            if (e.getKind() == ElementKind.FIELD) {
+                fields.add((VariableElement) e);
+            }
+        }
+        return fields;
     }
 
     // http://hauchee.blogspot.de/2015/12/compile-time-annotation-processing-getting-class-value.html
@@ -144,8 +209,14 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
             if (!currElement.getModifiers().contains(Modifier.TRANSIENT)) {
                 if (kind1.equals(TypeKind.ARRAY)) {
-                    writeArray(writeExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, simpleName.toString());
-                    readArray(readExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, simpleName.toString());
+                    String sizeField = getFieldReflectingCurrentArraySize(currElement);
+                    if (sizeField != null) {
+                        writeArrayWithSizeField(writeExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, sizeField, simpleName.toString());
+                        readArrayWithSizeField(readExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, sizeField, simpleName.toString());
+                    } else {
+                        writeArray(writeExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, simpleName.toString());
+                        readArray(readExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, simpleName.toString());
+                    }
                 } else {
                     writeExternalMethod.addStatement(createWriteStatement(typeMirror, kind1, simpleName.toString()));
                     readExternalMethod.addStatement(createReadStatement(typeMirror, kind1, simpleName.toString()));
@@ -155,27 +226,37 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void readArray(MethodSpec.Builder readExternalMsgBody, TypeMirror typeMirror, TypeKind kind1, String simpleName) {
-        String fieldArrayLength = simpleName + "Length";
-        String indexName = "i";
-
-        readExternalMsgBody.addStatement("int " + fieldArrayLength + "=in.readInt();");
-        readExternalMsgBody.beginControlFlow("for (int i=0; i < " + fieldArrayLength + "; i++)");
-        readExternalMsgBody.addStatement(createReadStatement(typeMirror, kind1, (simpleName + "[" + indexName + "]")));
+    private void readArrayWithSizeField(MethodSpec.Builder readExternalMsgBody, TypeMirror componentType, TypeKind kind1, String sizeFieldName, String arrayFieldName) {
+        readExternalMsgBody.beginControlFlow("for (int i =0; i < " + sizeFieldName + "; i++)");
+        readExternalMsgBody.addStatement(createReadStatement(componentType, kind1, (arrayFieldName + "[i]")));
         readExternalMsgBody.endControlFlow();
     }
 
-    private void writeArray(MethodSpec.Builder writeExternalMsgBody, TypeMirror typeMirror, TypeKind kind1, String simpleName) {
+    private void writeArrayWithSizeField(MethodSpec.Builder writeExternalMsgBody, TypeMirror componentType, TypeKind kind1, String sizeFieldName, String arrayFieldName) {
+        writeExternalMsgBody.beginControlFlow("for (int i=0; i <  " + sizeFieldName + "; i++)");
+        writeExternalMsgBody.addStatement(createWriteStatement(componentType, kind1, (arrayFieldName + "[i]")));
+        writeExternalMsgBody.endControlFlow();
+    }
+
+    private void readArray(MethodSpec.Builder readExternalMsgBody, TypeMirror typeMirror, TypeKind kind1, String simpleName) {
         String fieldArrayLength = simpleName + "Length";
-        String indexName = "i";
+
+        readExternalMsgBody.addStatement("int " + fieldArrayLength + "=in.readInt();");
+        readExternalMsgBody.beginControlFlow("for (int i =0; i < " + fieldArrayLength + "; i++)");
+        readExternalMsgBody.addStatement(createReadStatement(typeMirror, kind1, (simpleName + "[i]")));
+        readExternalMsgBody.endControlFlow();
+    }
+
+    private void writeArray(MethodSpec.Builder writeExternalMsgBody, TypeMirror typeMirror, TypeKind kind1, String arrayFieldName) {
+        String fieldArrayLength = arrayFieldName + "Length";
 
         writeExternalMsgBody.addStatement("int " + fieldArrayLength + " = 0");
-        writeExternalMsgBody.beginControlFlow("if (" + simpleName + " != null)");
-        writeExternalMsgBody.addStatement(fieldArrayLength + "= " + simpleName + ".length");
+        writeExternalMsgBody.beginControlFlow("if (" + arrayFieldName + " != null)");
+        writeExternalMsgBody.addStatement(fieldArrayLength + "= " + arrayFieldName + ".length");
         writeExternalMsgBody.endControlFlow();
         writeExternalMsgBody.addStatement("out.writeInt(" + fieldArrayLength + ")");
-        writeExternalMsgBody.beginControlFlow("for (int i=0; " + indexName + " <  " + fieldArrayLength + "; " + indexName + "++)");
-        writeExternalMsgBody.addStatement(createWriteStatement(typeMirror, kind1, (simpleName + "[" + indexName + "]")));
+        writeExternalMsgBody.beginControlFlow("for (int i=0; i <  " + fieldArrayLength + "; i++)");
+        writeExternalMsgBody.addStatement(createWriteStatement(typeMirror, kind1, (arrayFieldName + "[i]")));
         writeExternalMsgBody.endControlFlow();
     }
 

@@ -17,8 +17,11 @@ public class AnnotatedTestPojoA {
     transient long transientLong;
 
     int arraySizeField;
-
     @EfficientArray(sizeField = "arraySizeField")
-    Double[] arrayWithSizeField;
+    double[] doubleArrayWithSizeField;
 
+
+    int secondArraySizeField;
+    @EfficientArray(sizeField = "secondArraySizeField")
+    int[] intArrayWithSizeField;
 }
