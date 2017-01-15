@@ -27,7 +27,6 @@ import java.util.*;
 public class EfficientAnnotationProcessor extends AbstractProcessor {
     boolean inError = false;
     List<Element> efficientElements = new ArrayList<Element>();
-    Map<String, EfficientField> originalFieldNameToEfficientField = new HashMap<String, EfficientField>();
     int round = -1;
 
     @Override
@@ -136,13 +135,9 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
                     .returns(void.class);
 
 
-            StringBuilder writeExernalMessageBody = new StringBuilder();
-            StringBuilder readExernalMessageBody = new StringBuilder();
-
             List<VariableElement> fieldsToProcess = extractFields(enclosedElements);
             List<VariableElement> fieldsProcessed = new ArrayList<VariableElement>();
 
-            final Iterator<VariableElement> iterator = fieldsToProcess.iterator();
             for (VariableElement currField : fieldsToProcess) {
                 verifyDependentFieldsAreAlreadySerialized(currField, fieldsProcessed);
                 appendWriteExternalCommand(staticWriteExternalMethod, staticReadExternalMethod, currField);
@@ -276,35 +271,30 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
 
             if (!currField.getModifiers().contains(Modifier.TRANSIENT)) {
-                if (classTypeIsAnnotatatedAsEfficient(fieldTypeMirror)) {
-                    writeExternalMethod.addStatement(createWriteEffectiveField(toEfficientClassName(fieldTypeMirror.toString()), fieldName));
-                    readExternalMethod.addStatement(createReadEffectiveField(toEfficientClassName(fieldTypeMirror.toString()), fieldName));
-                } else {
-                    if (kind1.equals(TypeKind.ARRAY)) {
-                        String sizeField = getFieldReflectingCurrentArraySize(currField);
-                        if (sizeField != null) {
-                            writeArrayWithSizeField(writeExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, sizeField, fieldName);
-                            readArrayWithSizeField(readExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, sizeField, fieldName);
-                        } else {
-                            writeArray(writeExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, fieldName);
-                            readArray(readExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, fieldName);
-                        }
+                if (kind1.equals(TypeKind.ARRAY)) {
+                    String sizeField = getFieldReflectingCurrentArraySize(currField);
+                    if (sizeField != null) {
+                        writeArrayWithSizeField(writeExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, sizeField, fieldName);
+                        readArrayWithSizeField(readExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, sizeField, fieldName);
                     } else {
-                        writeExternalMethod.addStatement(createWriteStatement(fieldTypeMirror, kind1, fieldName));
-                        readExternalMethod.addStatement(createReadStatement(fieldTypeMirror, kind1, fieldName));
+                        writeArray(writeExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, fieldName);
+                        readArray(readExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, fieldName);
                     }
+                } else {
+                    writeExternalMethod.addStatement(createWriteStatement(fieldTypeMirror, kind1, fieldName));
+                    readExternalMethod.addStatement(createReadStatement(fieldTypeMirror, kind1, fieldName));
                 }
-
             }
+
         }
     }
 
     private String createReadEffectiveField(String effectivClassName, String fieldName) {
-        return effectivClassName + ".readExternal( target." + fieldName + ", in)";
+        return effectivClassName + ".readExternal(" + fieldName + ", in)";
     }
 
     private String createWriteEffectiveField(String effectivClassName, String fieldName) {
-        return effectivClassName + ".writeExternal( src." + fieldName + ", out)";
+        return effectivClassName + ".writeExternal(" + fieldName + ", out)";
 
     }
 
@@ -363,7 +353,9 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
             return statement;
         }
         String fqFieldName = "src." + fieldName;
-        if (TypeKind.LONG.equals(kind1) || isAssignable(currType, Long.class)) {
+        if (classTypeIsAnnotatatedAsEfficient(currType)) {
+            statement.append(createWriteEffectiveField(toEfficientClassName(currType.toString()), fqFieldName));
+        } else if (TypeKind.LONG.equals(kind1) || isAssignable(currType, Long.class)) {
             statement.append("out.writeLong(" + fqFieldName + ")");
         } else if (TypeKind.DOUBLE.equals(kind1) || isAssignable(currType, Double.class)) {
             statement.append("out.writeDouble(" + fqFieldName + ")");
@@ -397,7 +389,9 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
         String fqFieldName = "target." + fieldName;
 
-        if (TypeKind.LONG.equals(kind1) || isAssignable(currType, Long.class)) {
+        if (classTypeIsAnnotatatedAsEfficient(currType)) {
+            statement.append(createReadEffectiveField(toEfficientClassName(currType.toString()), fqFieldName));
+        } else if (TypeKind.LONG.equals(kind1) || isAssignable(currType, Long.class)) {
             statement.append(fqFieldName + " = in.readLong()");
         } else if (TypeKind.DOUBLE.equals(kind1) || isAssignable(currType, Double.class)) {
             statement.append(fqFieldName + " = in.readDouble()");
@@ -442,16 +436,5 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
             }
         }
         return false;
-    }
-
-
-    private class EfficientField {
-        private String unefficientFieldName;
-        private TypeMirror unefficientFieldType;
-
-        public EfficientField(String unefficientFieldName, TypeMirror unefficientFieldType) {
-            this.unefficientFieldName = unefficientFieldName;
-            this.unefficientFieldType = unefficientFieldType;
-        }
     }
 }
