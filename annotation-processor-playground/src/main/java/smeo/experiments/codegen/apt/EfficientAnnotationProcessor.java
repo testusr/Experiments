@@ -85,15 +85,11 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
     private boolean processClass(Filer filer, Element e) {
         if (e.getKind() == ElementKind.CLASS) {
 
-            String className;
-            String packageName;
             TypeElement classElement = (TypeElement) e;
             PackageElement packageElement = (PackageElement) classElement.getEnclosingElement();
-            String fqClassName;
-
-            fqClassName = classElement.getQualifiedName().toString();
-            className = classElement.getSimpleName().toString();
-            packageName = packageElement.getQualifiedName().toString();
+            String className = classElement.getSimpleName().toString();
+            String packageName = packageElement.getQualifiedName().toString();
+            String fqClassName = classElement.getQualifiedName().toString();
 
 
             processingEnv.getMessager().printMessage(
@@ -198,6 +194,11 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
     }
 
     private String toEfficientClassName(String className) {
+        final int lastDotIndex = className.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            String simpleClassName = className.substring(lastDotIndex + 1, className.length());
+            return className.replace(simpleClassName, "Efficient" + simpleClassName);
+        }
         return "Efficient" + className;
     }
 
@@ -256,47 +257,55 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
     }
 
 
-    private void appendWriteExternalCommand(MethodSpec.Builder writeExternalMethod, MethodSpec.Builder readExternalMethod, Element currElement) {
-        final ElementKind kind = currElement.getKind();
+    private void appendWriteExternalCommand(MethodSpec.Builder writeExternalMethod, MethodSpec.Builder readExternalMethod, Element currField) {
+        final ElementKind kind = currField.getKind();
 
         if (ElementKind.FIELD.equals(kind)) {
-            final TypeMirror typeMirror = currElement.asType();
+            final TypeMirror fieldTypeMirror = currField.asType();
 
 
-            final Class<? extends Element> aClass = currElement.getClass();
-            final TypeKind kind1 = typeMirror.getKind();
-            final String className = typeMirror.toString();
+            final Class<? extends Element> aClass = currField.getClass();
+            final TypeKind kind1 = fieldTypeMirror.getKind();
+            final String className = fieldTypeMirror.toString();
             final String name = aClass.getName();
             final Field[] declaredFields = aClass.getDeclaredFields();
             final boolean primitive = aClass.isPrimitive();
-            final String fieldName = currElement.getSimpleName().toString();
+            final String fieldName = currField.getSimpleName().toString();
 
             String efficientFieldReplacement = null;
 
 
-            if (!currElement.getModifiers().contains(Modifier.TRANSIENT)) {
-                if (classTypeIsAnnotatatedAsEfficient(typeMirror)) {
-                    if (!originalFieldNameToEfficientField.containsKey(fieldName)) {
-                        originalFieldNameToEfficientField.put(fieldName, new EfficientField(fieldName, typeMirror));
-                    }
+            if (!currField.getModifiers().contains(Modifier.TRANSIENT)) {
+                if (classTypeIsAnnotatatedAsEfficient(fieldTypeMirror)) {
+                    writeExternalMethod.addStatement(createWriteEffectiveField(toEfficientClassName(fieldTypeMirror.toString()), fieldName));
+                    readExternalMethod.addStatement(createReadEffectiveField(toEfficientClassName(fieldTypeMirror.toString()), fieldName));
                 } else {
                     if (kind1.equals(TypeKind.ARRAY)) {
-                        String sizeField = getFieldReflectingCurrentArraySize(currElement);
+                        String sizeField = getFieldReflectingCurrentArraySize(currField);
                         if (sizeField != null) {
-                            writeArrayWithSizeField(writeExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, sizeField, fieldName);
-                            readArrayWithSizeField(readExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, sizeField, fieldName);
+                            writeArrayWithSizeField(writeExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, sizeField, fieldName);
+                            readArrayWithSizeField(readExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, sizeField, fieldName);
                         } else {
-                            writeArray(writeExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, fieldName);
-                            readArray(readExternalMethod, ((ArrayType) typeMirror).getComponentType(), kind1, fieldName);
+                            writeArray(writeExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, fieldName);
+                            readArray(readExternalMethod, ((ArrayType) fieldTypeMirror).getComponentType(), kind1, fieldName);
                         }
                     } else {
-                        writeExternalMethod.addStatement(createWriteStatement(typeMirror, kind1, fieldName));
-                        readExternalMethod.addStatement(createReadStatement(typeMirror, kind1, fieldName));
+                        writeExternalMethod.addStatement(createWriteStatement(fieldTypeMirror, kind1, fieldName));
+                        readExternalMethod.addStatement(createReadStatement(fieldTypeMirror, kind1, fieldName));
                     }
                 }
 
             }
         }
+    }
+
+    private String createReadEffectiveField(String effectivClassName, String fieldName) {
+        return effectivClassName + ".readExternal( target." + fieldName + ", in)";
+    }
+
+    private String createWriteEffectiveField(String effectivClassName, String fieldName) {
+        return effectivClassName + ".writeExternal( src." + fieldName + ", out)";
+
     }
 
     private void readArrayWithSizeField(MethodSpec.Builder readExternalMsgBody, TypeMirror componentType, TypeKind kind1, String sizeFieldName, String arrayFieldName) {
