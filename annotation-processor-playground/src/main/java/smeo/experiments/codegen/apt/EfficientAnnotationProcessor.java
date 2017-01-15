@@ -23,7 +23,7 @@ import java.util.*;
  * // http://www.programcreek.com/java-api-examples/index.php?api=javax.lang.model.type.TypeMirror
  * http://hannesdorfmann.com/annotation-processing/annotationprocessing101
  */
-@SupportedAnnotationTypes("smeo.experiments.codegen.apt.Efficient")
+@SupportedAnnotationTypes("smeo.experiments.codegen.apt.GenEfficient")
 public class EfficientAnnotationProcessor extends AbstractProcessor {
     public static final String SRC = "src";
     public static final String TARGET = "target";
@@ -37,7 +37,7 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         inError = false;
         round++;
-        final Set<? extends Element> elementsAnnotatedWithEfficient = roundEnv.getElementsAnnotatedWith(Efficient.class);
+        final Set<? extends Element> elementsAnnotatedWithEfficient = roundEnv.getElementsAnnotatedWith(GenEfficient.class);
         efficientElements.addAll(elementsAnnotatedWithEfficient);
         System.err.println("EfficientAnnotationProcessor was called");
 
@@ -103,6 +103,13 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
             final ClassName className1 = ClassName.get(packageName, className);
 
+            final MethodSpec.Builder staticInternalizableMethod = MethodSpec.methodBuilder("internalize")
+                    .addParameter(className1, SRC, Modifier.FINAL)
+                    .addParameter(className1, TARGET, Modifier.FINAL)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addModifiers(Modifier.STATIC)
+                    .returns(void.class);
+
             final MethodSpec.Builder staticWriteExternalMethod = MethodSpec.methodBuilder("writeExternal")
                     .addParameter(className1, SRC, Modifier.FINAL)
                     .addParameter(ObjectOutput.class, OUT, Modifier.FINAL)
@@ -138,13 +145,20 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
                     .addStatement("readExternal(this, " + IN + ")")
                     .returns(void.class);
 
+            final MethodSpec.Builder internalizeMethod = MethodSpec.methodBuilder("internalize")
+                    .addParameter(className1, SRC, Modifier.FINAL)
+                    .addAnnotation(Override.class)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addStatement("internalize(" + SRC + ", this)")
+                    .returns(void.class);
+
 
             List<VariableElement> fieldsToProcess = extractFields(enclosedElements);
             List<VariableElement> fieldsProcessed = new ArrayList<VariableElement>();
 
             for (VariableElement currField : fieldsToProcess) {
                 verifyDependentFieldsAreAlreadySerialized(currField, fieldsProcessed);
-                appendWriteExternalCommand(staticWriteExternalMethod, staticReadExternalMethod, currField);
+                appendWriteExternalCommand(staticInternalizableMethod, staticWriteExternalMethod, staticReadExternalMethod, currField);
                 if (inError) {
                     break;
                 }
@@ -154,15 +168,25 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
             if (!inError) {
 
+
+                TypeVariableName p = TypeVariableName.get("T", className1);
+
+
                 final String generatedClassName = toEfficientClassName(className);
                 TypeSpec efficientVersion = TypeSpec.classBuilder(generatedClassName)
                         .addModifiers(Modifier.PUBLIC)
                         .superclass(TypeName.get(e.asType()))
                         .addSuperinterface(Externalizable.class)
+                        .addSuperinterface(ParameterizedTypeName.get(
+                                ClassName.get(Internalizable.class),
+                                p))
+                        .addTypeVariable(p)
                         .addMethod(staticWriteExternalMethod.build())
                         .addMethod(staticReadExternalMethod.build())
                         .addMethod(writeExternalMethod.build())
                         .addMethod(readExternalMethod.build())
+                        .addMethod(staticInternalizableMethod.build())
+                        .addMethod(internalizeMethod.build())
                         .build();
 
 
@@ -196,9 +220,9 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
         final int lastDotIndex = className.lastIndexOf('.');
         if (lastDotIndex > 0) {
             String simpleClassName = className.substring(lastDotIndex + 1, className.length());
-            return className.replace(simpleClassName, "Efficient" + simpleClassName);
+            return className.replace(simpleClassName, "GenEfficient" + simpleClassName);
         }
-        return "Efficient" + className;
+        return "GenEfficient" + className;
     }
 
     private String toEfficientFieldName(String fieldName) {
@@ -256,7 +280,7 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
     }
 
 
-    private void appendWriteExternalCommand(MethodSpec.Builder writeExternalMethod, MethodSpec.Builder readExternalMethod, Element currField) {
+    private void appendWriteExternalCommand(MethodSpec.Builder staticInternalizableMethod, MethodSpec.Builder writeExternalMethod, MethodSpec.Builder readExternalMethod, Element currField) {
         final ElementKind kind = currField.getKind();
 
         if (ElementKind.FIELD.equals(kind)) {
@@ -287,10 +311,15 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
                 } else {
                     writeExternalMethod.addStatement(createWriteStatement(fieldTypeMirror, kind1, fieldName));
                     readExternalMethod.addStatement(createReadStatement(fieldTypeMirror, kind1, fieldName));
+                    staticInternalizableMethod.addStatement(createInteralizableStatement(fieldTypeMirror, kind1, fieldName));
                 }
             }
 
         }
+    }
+
+    private String createInternalizeEffectiveField(String effectivClassName, String fieldName) {
+        return effectivClassName + ".internalize(" + SRC + "." + fieldName + "," + TARGET + "." + fieldName + ")";
     }
 
     private String createReadEffectiveField(String effectivClassName, String fieldName) {
@@ -349,6 +378,10 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
         return appendReadStatement(new StringBuilder(), currType, kind1, simpleName).toString();
     }
 
+    private String createInteralizableStatement(TypeMirror currType, TypeKind kind1, String simpleName) {
+        return appendInternalizeStatement(new StringBuilder(), currType, kind1, simpleName).toString();
+    }
+
     private StringBuilder appendWriteStatement(StringBuilder statement, TypeMirror currType, TypeKind kind1, String fieldName) {
         if (TypeKind.ERROR.equals(kind1)) {
             processingEnv.getMessager().printMessage(
@@ -382,10 +415,45 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
             processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.ERROR,
                     "cannot determine how to externalize field '" + fieldName + "' of type '" + currType.toString() + "'" +
-                            " either mark class as @Efficient or make it implement Serializable");
+                            " either mark class as @GenEfficient or make it implement Serializable");
         }
         return statement;
     }
+
+    private StringBuilder appendInternalizeStatement(StringBuilder statement, TypeMirror currType, TypeKind kind1, String fieldName) {
+        if (TypeKind.ERROR.equals(kind1)) {
+            processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR,
+                    "error trying to translate field for write statement '" + fieldName + "'");
+            return statement;
+        }
+        String fqFieldName = SRC + "." + fieldName;
+        if (classTypeIsAnnotatatedAsEfficient(currType)) {
+            statement.append(createInternalizeEffectiveField(toEfficientClassName(currType.toString()), fieldName));
+            //statement.append(TARGET + "." + fieldName + ".internalize(" + SRC + "." + fieldName + ")");
+        } else if (TypeKind.LONG.equals(kind1) || isAssignable(currType, Long.class)
+                || TypeKind.DOUBLE.equals(kind1) || isAssignable(currType, Double.class)
+                || TypeKind.FLOAT.equals(kind1) || isAssignable(currType, Float.class)
+                || TypeKind.BOOLEAN.equals(kind1) || isAssignable(currType, Boolean.class)
+                || TypeKind.INT.equals(kind1) || isAssignable(currType, Integer.class)
+                || TypeKind.SHORT.equals(kind1) || isAssignable(currType, Short.class)
+                || TypeKind.CHAR.equals(kind1) || isAssignable(currType, Character.class)) {
+            statement.append(TARGET + "." + fieldName + " = " + SRC + "." + fieldName);
+        } else if (implementsInterface(currType, Externalizable.class)) {
+            statement.append(TARGET + "." + fieldName + " = " + "smeo.experiments.codegen.apt.EfficientUtils.cloneViaExternalizable(" + SRC + "." + fieldName + ")");
+
+        } else if (implementsInterface(currType, Serializable.class)) {
+            statement.append(TARGET + "." + fieldName + " = " + "smeo.experiments.codegen.apt.EfficientUtils.cloneViaSerialization(" + SRC + "." + fieldName + ")");
+        } else {
+            inError = true;
+            processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR,
+                    "cannot determine how to externalize field '" + fieldName + "' of type '" + currType.toString() + "'" +
+                            " either mark class as @GenEfficient or make it implement Serializable");
+        }
+        return statement;
+    }
+
 
     private StringBuilder appendReadStatement(StringBuilder statement, TypeMirror currType, TypeKind kind1, String fieldName) {
         if (TypeKind.ERROR.equals(kind1)) {
