@@ -32,6 +32,7 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
     boolean inError = false;
     List<Element> efficientElements = new ArrayList<Element>();
     int round = -1;
+    private boolean hasNoArgumentConstructor = false;
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -285,8 +286,6 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
 
         if (ElementKind.FIELD.equals(kind)) {
             final TypeMirror fieldTypeMirror = currField.asType();
-
-
             final Class<? extends Element> aClass = currField.getClass();
             final TypeKind kind1 = fieldTypeMirror.getKind();
             final String className = fieldTypeMirror.toString();
@@ -439,8 +438,9 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
                 || TypeKind.SHORT.equals(kind1) || isAssignable(currType, Short.class)
                 || TypeKind.CHAR.equals(kind1) || isAssignable(currType, Character.class)) {
             statement.append(TARGET + "." + fieldName + " = " + SRC + "." + fieldName);
-        } else if (implementsInterface(currType, Externalizable.class)) {
-            statement.append(TARGET + "." + fieldName + " = " + "smeo.experiments.codegen.apt.EfficientUtils.cloneViaExternalizable(" + SRC + "." + fieldName + ")");
+        } else if (implementsInterface(currType, Externalizable.class) && hasPublicNoArgConstructor(currType)) {
+            statement.append(TARGET + "." + fieldName + " = " + "smeo.experiments.codegen.apt.EfficientUtils.cloneViaExternalizable("
+                    + SRC + "." + fieldName + ")");
 
         } else if (implementsInterface(currType, Serializable.class)) {
             statement.append(TARGET + "." + fieldName + " = " + "smeo.experiments.codegen.apt.EfficientUtils.cloneViaSerialization(" + SRC + "." + fieldName + ")");
@@ -509,6 +509,22 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
         for (Element currElement : efficientElements) {
             if (currElement.asType().equals(type)) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasPublicNoArgConstructor(TypeMirror type) {
+        final TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(type.toString());
+        // Check if an empty public constructor is given
+        for (Element enclosed : typeElement.getEnclosedElements()) {
+            if (enclosed.getKind() == ElementKind.CONSTRUCTOR) {
+                ExecutableElement constructorElement = (ExecutableElement) enclosed;
+                if (constructorElement.getParameters().size() == 0 && constructorElement.getModifiers()
+                        .contains(Modifier.PUBLIC)) {
+                    // Found an empty constructor
+                    return true;
+                }
             }
         }
         return false;
