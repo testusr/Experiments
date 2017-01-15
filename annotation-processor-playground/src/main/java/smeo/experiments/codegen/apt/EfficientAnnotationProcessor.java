@@ -220,9 +220,9 @@ public class EfficientAnnotationProcessor extends AbstractProcessor {
         final int lastDotIndex = className.lastIndexOf('.');
         if (lastDotIndex > 0) {
             String simpleClassName = className.substring(lastDotIndex + 1, className.length());
-            return className.replace(simpleClassName, "GenEfficient" + simpleClassName);
+            return className.replace(simpleClassName, "Efficient" + simpleClassName);
         }
-        return "GenEfficient" + className;
+        return "Efficient" + className;
     }
 
     private String toEfficientFieldName(String fieldName) {
