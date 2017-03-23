@@ -1,14 +1,18 @@
 package smeo.experiment.outputstream.models.bytecontainer;
 
 /**
- * Reading and writing primites to and from byte array
+ * Reading and writing primitives to and from byte array
  */
 public class ByteContainer {
     public static final int NO_OF_BYTES_INT = 4;
     public static final int NO_OF_BYTES_LONG = 8;
+    public static final int NO_OF_BYTES_DOUBLE = NO_OF_BYTES_LONG;
     public static final int NO_OF_BYTES_FLOAT = NO_OF_BYTES_INT;
-    public static final int NO_OF_BYTES_SHORT = 1;
+    public static final int NO_OF_BYTES_SHORT = 2;
     public static final int NO_OF_BYTES_BOOLEAN = 1;
+    public static final int NO_OF_BYTES_CHAR = 2;
+
+
     private int DEFAULT_BLOCK_SIZE = 1024;
     byte[][] data = new byte[100][];
 
@@ -67,14 +71,14 @@ public class ByteContainer {
     public char readChar() {
         char result = (char) ((byteAt(readPos + 1) & 0xFF) +
                 (byteAt(readPos) << 8));
-        readPos += 2;
+        readPos += NO_OF_BYTES_CHAR;
         return result;
     }
 
     public short readShort() {
         short result = (short) ((byteAt(readPos + 1) & 0xFF) +
                 (byteAt(readPos) << 8));
-        readPos += 2;
+        readPos += NO_OF_BYTES_SHORT;
         return result;
     }
 
@@ -138,7 +142,7 @@ public class ByteContainer {
     public void writeShort(short val) {
         b(writtenBytes + 1, (byte) val);
         b(writtenBytes, (byte) (val >>> 8));
-        writtenBytes++;
+        writtenBytes += NO_OF_BYTES_SHORT;
     }
 
     public void writeInt(int val) {

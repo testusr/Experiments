@@ -71,6 +71,42 @@ public class ByteContainerTest {
         }
     }
 
+    @Test
+    public void readWriteChar() {
+        List<Character> testSamples = randomCharacter(NO_OF_SAMPLES);
+        for (Character currSample : testSamples) {
+            byteContainer.writeChar(currSample);
+        }
+        Assert.assertEquals(NO_OF_SAMPLES, byteContainer.size() / NO_OF_BYTES_CHAR);
+        for (Character currSample : testSamples) {
+            Assert.assertTrue(currSample.charValue() == byteContainer.readChar());
+        }
+    }
+
+    @Test
+    public void readWriteDouble() {
+        List<Double> testSamples = randomDouble(NO_OF_SAMPLES);
+        for (Double currSample : testSamples) {
+            byteContainer.writeDouble(currSample);
+        }
+        Assert.assertEquals(NO_OF_SAMPLES, byteContainer.size() / NO_OF_BYTES_DOUBLE);
+        for (Double currSample : testSamples) {
+            Assert.assertTrue(currSample.doubleValue() == byteContainer.readDouble());
+        }
+    }
+
+    @Test
+    public void readWriteShort() {
+        List<Short> testSamples = randomShort(NO_OF_SAMPLES);
+        for (Short currSample : testSamples) {
+            byteContainer.writeShort(currSample);
+        }
+        Assert.assertEquals(NO_OF_SAMPLES, byteContainer.size() / NO_OF_BYTES_CHAR);
+        for (Short currSample : testSamples) {
+            Assert.assertTrue(currSample.shortValue() == byteContainer.readShort());
+        }
+    }
+
 
     private List<Byte> randomBytes(int noOfSamples) {
         List<Byte> elements = new ArrayList<Byte>();
@@ -100,6 +136,31 @@ public class ByteContainerTest {
         List<Boolean> elements = new ArrayList<Boolean>();
         for (int i = 0; i < noOfSamples; i++) {
             elements.add(random.nextBoolean());
+        }
+        return elements;
+    }
+
+    private List<Character> randomCharacter(int noOfSamples) {
+        List<Character> elements = new ArrayList<Character>();
+        for (int i = 0; i < noOfSamples; i++) {
+            elements.add((char) random.nextInt(255));
+        }
+        return elements;
+    }
+
+    private List<Double> randomDouble(int noOfSamples) {
+        List<Double> elements = new ArrayList<Double>();
+        for (int i = 0; i < noOfSamples; i++) {
+            elements.add(random.nextDouble());
+        }
+        return elements;
+    }
+
+
+    private List<Short> randomShort(int noOfSamples) {
+        List<Short> elements = new ArrayList<Short>();
+        for (int i = 0; i < noOfSamples; i++) {
+            elements.add((short) random.nextInt());
         }
         return elements;
     }
