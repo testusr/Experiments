@@ -180,4 +180,9 @@ public class ByteContainer {
     public int size() {
         return writtenBytes;
     }
+
+    public long skip(long noOfBytes) {
+        readPos += noOfBytes;
+        return noOfBytes;
+    }
 }

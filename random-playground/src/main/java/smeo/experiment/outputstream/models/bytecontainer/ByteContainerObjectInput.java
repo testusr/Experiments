@@ -27,22 +27,25 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public int read(byte[] b) throws IOException {
-        return 0;
+        for (int i=0; i < b.length; i++){
+            b[i] = byteContainer.readByte();
+        }
+        return b.length;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        return 0;
+        throw new NotImplementedException();
     }
 
     @Override
     public long skip(long n) throws IOException {
-        return 0;
+        return byteContainer.skip(n);
     }
 
     @Override
     public int available() throws IOException {
-        return 0;
+        throw new NotImplementedException();
     }
 
     @Override
@@ -52,22 +55,22 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public void readFully(byte[] b) throws IOException {
-
+        throw new NotImplementedException();
     }
 
     @Override
     public void readFully(byte[] b, int off, int len) throws IOException {
-
+        throw new NotImplementedException();
     }
 
     @Override
     public int skipBytes(int n) throws IOException {
-        return 0;
+        throw new NotImplementedException();
     }
 
     @Override
     public boolean readBoolean() throws IOException {
-        return false;
+        return byteContainer.readBoolean();
     }
 
     @Override
@@ -77,51 +80,51 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public int readUnsignedByte() throws IOException {
-        return 0;
+        throw new NotImplementedException();
     }
 
     @Override
     public short readShort() throws IOException {
-        return 0;
+        return byteContainer.readShort();
     }
 
     @Override
     public int readUnsignedShort() throws IOException {
-        return 0;
+        throw new NotImplementedException();
     }
 
     @Override
     public char readChar() throws IOException {
-        return 0;
+        return byteContainer.readChar();
     }
 
     @Override
     public int readInt() throws IOException {
-        return 0;
+        return byteContainer.readInt();
     }
 
     @Override
     public long readLong() throws IOException {
-        return 0;
+        return byteContainer.readLong();
     }
 
     @Override
     public float readFloat() throws IOException {
-        return 0;
+        return byteContainer.readFloat();
     }
 
     @Override
     public double readDouble() throws IOException {
-        return 0;
+        return byteContainer.readDouble();
     }
 
     @Override
     public String readLine() throws IOException {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
     public String readUTF() throws IOException {
-        return null;
+        throw new NotImplementedException();
     }
 }
