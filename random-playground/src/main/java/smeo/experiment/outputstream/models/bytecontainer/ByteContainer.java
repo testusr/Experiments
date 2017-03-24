@@ -20,7 +20,7 @@ public class ByteContainer {
     int allocatedBlocks = 0;
     long capacity = 0;
 
-    int writtenBytes = 0;
+    int writePos = 0;
     int readPos = 0;
 
     private void grow(long noOfNeededBytes) {
@@ -125,32 +125,32 @@ public class ByteContainer {
 
     public void writeByte(byte towrite) {
 
-        b(writtenBytes++, towrite);
+        b(writePos++, towrite);
     }
 
     public void writeBoolean(boolean val) {
-        b(writtenBytes, (byte) (val ? 1 : 0));
-        writtenBytes++;
+        b(writePos, (byte) (val ? 1 : 0));
+        writePos++;
     }
 
     public void writeChar(char val) {
-        b(writtenBytes + 1, (byte) (val));
-        b(writtenBytes, (byte) (val >>> 8));
-        writtenBytes += 2;
+        b(writePos + 1, (byte) (val));
+        b(writePos, (byte) (val >>> 8));
+        writePos += 2;
     }
 
     public void writeShort(short val) {
-        b(writtenBytes + 1, (byte) val);
-        b(writtenBytes, (byte) (val >>> 8));
-        writtenBytes += NO_OF_BYTES_SHORT;
+        b(writePos + 1, (byte) val);
+        b(writePos, (byte) (val >>> 8));
+        writePos += NO_OF_BYTES_SHORT;
     }
 
     public void writeInt(int val) {
-        b(writtenBytes + 3, (byte) val);
-        b(writtenBytes + 2, (byte) (val >>> 8));
-        b(writtenBytes + 1, (byte) (val >>> 16));
-        b(writtenBytes, (byte) (val >>> 24));
-        writtenBytes += NO_OF_BYTES_INT;
+        b(writePos + 3, (byte) val);
+        b(writePos + 2, (byte) (val >>> 8));
+        b(writePos + 1, (byte) (val >>> 16));
+        b(writePos, (byte) (val >>> 24));
+        writePos += NO_OF_BYTES_INT;
     }
 
     public void writeFloat(float val) {
@@ -158,15 +158,15 @@ public class ByteContainer {
     }
 
     public void writeLong(long val) {
-        b(writtenBytes + 7, (byte) val);
-        b(writtenBytes + 6, (byte) (val >>> 8));
-        b(writtenBytes + 5, (byte) (val >>> 16));
-        b(writtenBytes + 4, (byte) (val >>> 24));
-        b(writtenBytes + 3, (byte) (val >>> 32));
-        b(writtenBytes + 2, (byte) (val >>> 40));
-        b(writtenBytes + 1, (byte) (val >>> 48));
-        b(writtenBytes, (byte) (val >>> 56));
-        writtenBytes += NO_OF_BYTES_LONG;
+        b(writePos + 7, (byte) val);
+        b(writePos + 6, (byte) (val >>> 8));
+        b(writePos + 5, (byte) (val >>> 16));
+        b(writePos + 4, (byte) (val >>> 24));
+        b(writePos + 3, (byte) (val >>> 32));
+        b(writePos + 2, (byte) (val >>> 40));
+        b(writePos + 1, (byte) (val >>> 48));
+        b(writePos, (byte) (val >>> 56));
+        writePos += NO_OF_BYTES_LONG;
     }
 
     private void b(int writPos, byte value) {
@@ -178,11 +178,63 @@ public class ByteContainer {
     }
 
     public int size() {
-        return writtenBytes;
+        return writePos;
     }
 
-    public long skip(long noOfBytes) {
-        readPos += noOfBytes;
-        return noOfBytes;
+    public long skipRead(long n) {
+        final long skippedBytes = Math.max(n, leftRead());
+        readPos += skippedBytes;
+        return skippedBytes;
+    }
+
+    public long skipWrite(long n, boolean extendIfExceeding) {
+        long capacityLeftAfterSkip = leftWrite() - n;
+        if (capacityLeftAfterSkip < 0) {
+            if (extendIfExceeding) {
+                grow(Math.abs(capacityLeftAfterSkip));
+            } else {
+                return capacityLeftAfterSkip + n;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * @return no of bytes left to read
+     */
+    public long leftRead() {
+        return writePos - readPos;
+    }
+
+    /**
+     * @return number of bytes possible to write with the current capacity
+     */
+
+    public long leftWrite() {
+        return capacity - writePos;
+    }
+
+    public int read(byte[] b, int off, int len) {
+        final int bytesToRead = Math.min(writePos - off, len);
+        if (bytesToRead < 0) {
+            return 0;
+        } else {
+            for (int i = 0; i < bytesToRead; i++) {
+                b[i] = byteAt(off + i);
+            }
+        }
+        return bytesToRead;
+    }
+
+    public void write(byte[] b, int off, int len) {
+        for (int i = 0; i < len; i++) {
+            final int pos = off + i;
+            if (pos > capacity) {
+                grow(blockSize);
+            }
+            b(writePos, b[i]);
+            writePos++;
+        }
+
     }
 }

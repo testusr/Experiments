@@ -34,6 +34,7 @@ public class ByteContainerObjectOutput implements ObjectOutput {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
+        byteContainer.write(b, off, len);
         throw new NotImplementedException();
     }
 

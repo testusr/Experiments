@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 
 /**
- * Created by smeo on 21.03.17.
+ * ObjectInput implemeting wrapper for a {@link ByteContainer}
  */
 public class ByteContainerObjectInput implements ObjectInput {
     private ByteContainer byteContainer;
@@ -27,7 +27,7 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public int read(byte[] b) throws IOException {
-        for (int i=0; i < b.length; i++){
+        for (int i = 0; i < b.length; i++) {
             b[i] = byteContainer.readByte();
         }
         return b.length;
@@ -35,12 +35,12 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        throw new NotImplementedException();
+        return byteContainer.read(b, off, len);
     }
 
     @Override
     public long skip(long n) throws IOException {
-        return byteContainer.skip(n);
+        return byteContainer.skipRead(n);
     }
 
     @Override
