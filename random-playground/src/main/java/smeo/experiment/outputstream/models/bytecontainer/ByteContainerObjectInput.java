@@ -9,10 +9,14 @@ import java.io.ObjectInput;
  * ObjectInput implemeting wrapper for a {@link ByteContainer}
  */
 public class ByteContainerObjectInput implements ObjectInput {
-    private ByteContainer byteContainer;
+    private final ByteContainer byteContainer;
 
     public ByteContainerObjectInput(ByteContainer byteContainer) {
         this.byteContainer = byteContainer;
+    }
+
+    public ByteContainer byteContainer() {
+        return byteContainer;
     }
 
     @Override

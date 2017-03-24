@@ -13,8 +13,8 @@ public class ByteContainer {
     public static final int NO_OF_BYTES_CHAR = 2;
 
 
-    private int DEFAULT_BLOCK_SIZE = 1024;
-    byte[][] data = new byte[100][];
+    private final int DEFAULT_BLOCK_SIZE = 1024;
+    private final byte[][] data = new byte[100][];
 
     int blockSize = DEFAULT_BLOCK_SIZE;
     int allocatedBlocks = 0;

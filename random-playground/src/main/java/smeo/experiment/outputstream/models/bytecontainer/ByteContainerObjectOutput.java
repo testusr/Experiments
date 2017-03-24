@@ -9,10 +9,14 @@ import java.io.ObjectOutput;
  * Created by smeo on 21.03.17.
  */
 public class ByteContainerObjectOutput implements ObjectOutput {
-    private ByteContainer byteContainer;
+    private final ByteContainer byteContainer;
 
     public ByteContainerObjectOutput(ByteContainer byteContainer) {
         this.byteContainer = byteContainer;
+    }
+
+    public ByteContainer byteContainer() {
+        return byteContainer;
     }
 
     @Override
@@ -22,12 +26,12 @@ public class ByteContainerObjectOutput implements ObjectOutput {
 
     @Override
     public void write(int b) throws IOException {
-        byteContainer.writeByte((byte)b);
+        byteContainer.writeByte((byte) b);
     }
 
     @Override
     public void write(byte[] b) throws IOException {
-        for (int i=0; i < b.length; i++){
+        for (int i = 0; i < b.length; i++) {
             byteContainer.writeByte(b[i]);
         }
     }
@@ -45,17 +49,17 @@ public class ByteContainerObjectOutput implements ObjectOutput {
 
     @Override
     public void writeByte(int v) throws IOException {
-        byteContainer.writeByte((byte)v);
+        byteContainer.writeByte((byte) v);
     }
 
     @Override
     public void writeShort(int v) throws IOException {
-        byteContainer.writeShort((short)v);
+        byteContainer.writeShort((short) v);
     }
 
     @Override
     public void writeChar(int v) throws IOException {
-        byteContainer.writeChar((char)v);
+        byteContainer.writeChar((char) v);
     }
 
     @Override
