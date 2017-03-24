@@ -107,6 +107,24 @@ public class ByteContainerTest {
         }
     }
 
+    @Test
+    public void readWriteArray() {
+        byte[] sampleData = new byte[NO_OF_SAMPLES];
+        for (int i = 0; i < NO_OF_SAMPLES; i++) {
+            sampleData[0] = (byte) i;
+        }
+
+        final int writtenLength = NO_OF_SAMPLES / 2;
+        byteContainer.write(sampleData, 0, writtenLength);
+        Assert.assertEquals(writtenLength, byteContainer.size());
+
+        byte[] readData = new byte[writtenLength];
+        byteContainer.read(readData, 0, NO_OF_SAMPLES);
+        for (int i = 0; i < writtenLength; i++) {
+            Assert.assertEquals(sampleData[i], readData[i]);
+        }
+    }
+
 
     private List<Byte> randomBytes(int noOfSamples) {
         List<Byte> elements = new ArrayList<Byte>();
