@@ -26,8 +26,8 @@ public class EchoReflector {
 	public void relfectEchos(String[] args) throws IOException {
 
 		final String tmpDir = System.getProperty("java.io.tmpdir");
-		String incomingDataChroniclePath = tmpDir + "/er_initiated_echos";
-		String outgoingDataChroniclePath = tmpDir + "/er_reflected_echos";
+		String incomingDataChroniclePath = tmpDir + "/e_r_initiated_echos";
+		String outgoingDataChroniclePath = tmpDir + "/e_r_reflected_echos";
 
 		System.out.println("i:" + incomingDataChroniclePath);
 		System.out.println("o:" + outgoingDataChroniclePath);
@@ -42,16 +42,18 @@ public class EchoReflector {
 
 		System.out.println("waiting for echos to reflect on port '" + ECHO_REFLECTOR_PORT + "' back to " + initiatorAdress + ":" + initatorPort + " ");
 
-		Chronicle outgoingDataChronicle = ChronicleQueueBuilder.indexed(incomingDataChroniclePath)
+		Chronicle incomingDataChronicle = ChronicleQueueBuilder.indexed(incomingDataChroniclePath)
 				.sink()
 				.connectAddress(initiatorAdress, initatorPort)
 				.build();
-		final ExcerptTailer tailer = outgoingDataChronicle.createTailer();
+		System.out.println("local sink connected to " + initiatorAdress + ":" + initatorPort);
+		final ExcerptTailer tailer = incomingDataChronicle.createTailer();
 
-		Chronicle incomingDataChronicle = ChronicleQueueBuilder.indexed(outgoingDataChroniclePath)
+		Chronicle outgoingDataChronicle = ChronicleQueueBuilder.indexed(outgoingDataChroniclePath)
 				.source()
-				.bindAddress("localhost", ECHO_REFLECTOR_PORT).build();
-		final ExcerptAppender appender = incomingDataChronicle.createAppender();
+				.bindAddress(LOCALHOST, ECHO_REFLECTOR_PORT).build();
+		System.out.println("local source bound to " + LOCALHOST + ":" + ECHO_REFLECTOR_PORT);
+		final ExcerptAppender appender = outgoingDataChronicle.createAppender();
 
 		EchoData echoData = new EchoData();
 
@@ -65,6 +67,9 @@ public class EchoReflector {
 					appender.startExcerpt();
 					echoData.writeExternal(appender);
 					appender.finish();
+					if (i++ % 50000 == 0) {
+						System.out.println("reflected " + i + " echos, last with id " + echoData.id);
+					}
 					if (firstEcho) {
 						System.out.println("reflected first echo");
 						firstEcho = false;

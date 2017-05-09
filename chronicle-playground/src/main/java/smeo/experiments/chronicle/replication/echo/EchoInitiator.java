@@ -14,13 +14,14 @@ public class EchoInitiator {
 	public static int ECHO_REFLECTOR_PORT = 12446;
 
 	public static final int NO_OF_ECHOS = 10000;
-	EchoData[] echos_send = new EchoData[NO_OF_ECHOS];
+	EchoData[] echos_send = new EchoData[NO_OF_ECHOS * 2];
 	EchoData[] echos_received = new EchoData[NO_OF_ECHOS];
 
-	AtomicBoolean everythingRead = new AtomicBoolean(false);
-	AtomicBoolean echoIsRunning = new AtomicBoolean(true);
+	AtomicBoolean isWritingEchos = new AtomicBoolean(true);
+
 	private boolean readerStarted = false;
-	final int receivingPort = ECHO_INITIATOR_PORT;
+	final int sinkConnectedTo = ECHO_REFLECTOR_PORT;
+	long lastSendEchoId = -1;
 
 	public void sendEchos(String[] args) throws IOException {
 
@@ -31,28 +32,31 @@ public class EchoInitiator {
 		System.out.println(chronicle_out_path);
 		System.out.println(chronicle_in_path);
 
-		int reflectorPort = ECHO_REFLECTOR_PORT;
-		String reflectorAdress = "localhost";
+		int outgoingSourcePort = ECHO_INITIATOR_PORT;
+		String outgoingSourceAdress = LOCALHOST;
 
 		if (args.length == 1) {
-			reflectorAdress = args[0];
+			outgoingSourceAdress = args[0];
 		}
 
-		System.out.println("sending echo to be reflected from " + reflectorAdress + ":" + reflectorPort + " and waiting for reflections on localhost:"
-				+ receivingPort + "");
+		System.out.println("sending echo to be reflected from " + outgoingSourceAdress + ":" + outgoingSourcePort
+				+ " and waiting for reflections on localhost:"
+				+ sinkConnectedTo + "");
 
 		// CHRONICLE TO CONNECT TO REMOTE CLIENT
 		Chronicle outgoingChronicle = ChronicleQueueBuilder.indexed(chronicle_out_path)
 				.source()
-				.connectAddress(reflectorAdress, reflectorPort)
+				.bindAddress(outgoingSourceAdress, outgoingSourcePort)
 				.build();
+		System.out.println("local source bound to " + outgoingSourceAdress + ":" + outgoingSourcePort);
 		ExcerptAppender outgoingDataAppender = outgoingChronicle.createAppender();
+
+		for (int i = 0; i < echos_received.length; i++) {
+			echos_received[i] = new EchoData();
+		}
 
 		for (int i = 0; i < echos_send.length; i++) {
 			echos_send[i] = new EchoData();
-		}
-		for (int i = 0; i < echos_send.length; i++) {
-			echos_received[i] = new EchoData();
 		}
 
 		startReader(chronicle_in_path);
@@ -62,42 +66,50 @@ public class EchoInitiator {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+
 		while (true) {
-			everythingRead.set(false);
-			System.out.println("start writing " + echos_send.length + " echos");
-
-			for (int i = 0; i < echos_send.length; i++) {
+			System.out.println("start writing ");
+			int i = 0;
+			while (isWritingEchos.get()) {
+				int sendIndex = i % echos_send.length;
 				outgoingDataAppender.startExcerpt();
-				echos_send[i].echoCalled();
-				echos_send[i].writeExternal(outgoingDataAppender);
+				echos_send[sendIndex].echoCalled();
+				echos_send[sendIndex].writeExternal(outgoingDataAppender);
 				outgoingDataAppender.finish();
+				i++;
 			}
+			System.out.println("writing stopped after " + i + " echos");
 
-			for (int i = 0; i < echos_send.length; i++) {
-				echos_send[i].refurbish();
-			}
-
-			System.out.println("waiting for echos beeing read");
-
-			while (!everythingRead.get()) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			refurbishPreallocatedSendEchos();
+			waitTillWritingEnabledAgain();
 
 		}
 
+	}
+
+	private void waitTillWritingEnabledAgain() {
+		while (!isWritingEchos.get()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void refurbishPreallocatedSendEchos() {
+		for (int j = 0; j < echos_send.length; j++) {
+			echos_send[j].refurbish();
+		}
 	}
 
 	private void startReader(String incomingDataChroniclePath) throws IOException {
 		if (!readerStarted) {
 			Chronicle incomingDataChronicle = ChronicleQueueBuilder.indexed(incomingDataChroniclePath)
 					.sink()
-					.bindAddress(LOCALHOST, receivingPort)
+					.connectAddress(LOCALHOST, sinkConnectedTo)
 					.build();
-
+			System.out.println("local source bound to " + LOCALHOST + ":" + ECHO_REFLECTOR_PORT);
 			new ChronicleEchoReader(incomingDataChronicle).start();
 			readerStarted = true;
 		}
@@ -114,15 +126,17 @@ public class EchoInitiator {
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
-					System.out.println("starting reader");
-					int i = 0;
-
-					while (echoIsRunning.get()) {
-						while (i < echos_send.length) {
+					while (true) {
+						System.out.println("respawning read");
+						// giving it a few packages to establish the flow
+						int i = -1000;
+						isWritingEchos.set(true);
+						while (i < echos_received.length) {
 							if (tailer.nextIndex()) {
 								try {
-									echos_received[i].readExternal(tailer);
-									System.out.println("read echo '" + echos_received[i].id + "'");
+									if (i >= 0) {
+										echos_received[i].readExternal(tailer);
+									}
 									i++;
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -132,16 +146,17 @@ public class EchoInitiator {
 							}
 						}
 
-						for (int j = 0; j < echos_received.length; j++) {
-							echos_received[j].clear();
-						}
-						System.out.println("all echos read");
-						everythingRead.set(true);
-
+						System.out.println("enough samples read (" + i + ") ");
+						isWritingEchos.set(false);
+						printReport(echos_received);
+						tailer.toEnd();
 					}
 				}
 			}).start();
 		}
+	}
+
+	private void printReport(EchoData[] echos_received) {
 	}
 
 	public static void main(String[] args) {
