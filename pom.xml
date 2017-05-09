@@ -19,6 +19,11 @@
     <module>chronicle-playground</module>
     <module>monitoring-playground</module>
     <module>quickfixj-playground</module>
+    <module>network-playground</module>
+    <module>test-utils</module>
+    <module>annotation-processor-playground</module>
+    <module>codegen-models</module>
+    <module>annotations-playground</module>
   </modules>
 
   <properties>
