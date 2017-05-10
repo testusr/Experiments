@@ -53,7 +53,7 @@ public class EchoInitiator {
 				.source()
 				.bindAddress(outgoingSourceAdress, outgoingSourcePort)
 				.build();
-		System.out.println("local source bound to " + outgoingSourceAdress + ":" + outgoingSourcePort);
+		System.out.println("exposing echo calls to be read from " + outgoingSourceAdress + ":" + outgoingSourcePort);
 		ExcerptAppender outgoingDataAppender = outgoingChronicle.createAppender();
 
 		for (int i = 0; i < echos_received.length; i++) {
@@ -114,7 +114,7 @@ public class EchoInitiator {
 					.sink()
 					.connectAddress(LOCALHOST, sinkConnectedTo)
 					.build();
-			System.out.println("local source bound to " + LOCALHOST + ":" + ECHO_REFLECTOR_PORT);
+			System.out.println("connecting local sink to " + LOCALHOST + ":" + ECHO_REFLECTOR_PORT + " to read reflected echos");
 			new ChronicleEchoReader(incomingDataChronicle).start();
 			readerStarted = true;
 		}

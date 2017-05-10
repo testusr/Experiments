@@ -46,13 +46,13 @@ public class EchoReflector {
 				.sink()
 				.connectAddress(initiatorAdress, initatorPort)
 				.build();
-		System.out.println("local sink connected to " + initiatorAdress + ":" + initatorPort);
+		System.out.println("connecting sink to read echos from " + initiatorAdress + ":" + initatorPort);
 		final ExcerptTailer tailer = incomingDataChronicle.createTailer();
 
 		Chronicle outgoingDataChronicle = ChronicleQueueBuilder.indexed(outgoingDataChroniclePath)
 				.source()
 				.bindAddress(LOCALHOST, ECHO_REFLECTOR_PORT).build();
-		System.out.println("local source bound to " + LOCALHOST + ":" + ECHO_REFLECTOR_PORT);
+		System.out.println("echo reflections exposed on " + LOCALHOST + ":" + ECHO_REFLECTOR_PORT);
 		final ExcerptAppender appender = outgoingDataChronicle.createAppender();
 
 		EchoData echoData = new EchoData();
