@@ -32,27 +32,40 @@ public class EchoReflector {
 		System.out.println("i:" + incomingDataChroniclePath);
 		System.out.println("o:" + outgoingDataChroniclePath);
 
-		String initiatorAdress = LOCALHOST;
+		String address_echo_initiator = LOCALHOST;
+		int port_echo_initiator = ECHO_INITIATOR_PORT;
 
-		if (args.length == 1) {
-			initiatorAdress = args[0];
+		int local_port = ECHO_REFLECTOR_PORT;
+		String local_address = LOCALHOST;
+
+		if (args.length > 0) {
+			String[] elements = args[0].split(":");
+			address_echo_initiator = elements[0];
+			port_echo_initiator = Integer.parseInt(elements[1]);
 		}
 
-		final int initatorPort = ECHO_INITIATOR_PORT;
+		if (args.length == 2) {
+			String[] elements = args[1].split(":");
+			local_address = elements[0];
+			local_port = Integer.parseInt(elements[1]);
+		}
 
-		System.out.println("waiting for echos to reflect on port '" + ECHO_REFLECTOR_PORT + "' back to " + initiatorAdress + ":" + initatorPort + " ");
+		System.out.println("EchoReflector [<address_echo_initiator>:<port_echo_initiator>] <local_port>");
+		System.out.println("- to address_echo_initiator: " + address_echo_initiator);
+		System.out.println("- to port_echo_initiator: " + port_echo_initiator);
+		System.out.println("- local_port: " + local_port);
 
 		Chronicle incomingDataChronicle = ChronicleQueueBuilder.indexed(incomingDataChroniclePath)
 				.sink()
-				.connectAddress(initiatorAdress, initatorPort)
+				.connectAddress(address_echo_initiator, port_echo_initiator)
 				.build();
-		System.out.println("connecting sink to read echos from " + initiatorAdress + ":" + initatorPort);
+		System.out.println("connecting sink to read echos from " + address_echo_initiator + ":" + port_echo_initiator);
 		final ExcerptTailer tailer = incomingDataChronicle.createTailer();
 
 		Chronicle outgoingDataChronicle = ChronicleQueueBuilder.indexed(outgoingDataChroniclePath)
 				.source()
-				.bindAddress(LOCALHOST, ECHO_REFLECTOR_PORT).build();
-		System.out.println("echo reflections exposed on " + LOCALHOST + ":" + ECHO_REFLECTOR_PORT);
+				.bindAddress(local_address, local_port).build();
+		System.out.println("echo reflections exposed on " + local_address + ":" + local_port);
 		final ExcerptAppender appender = outgoingDataChronicle.createAppender();
 
 		EchoData echoData = new EchoData();

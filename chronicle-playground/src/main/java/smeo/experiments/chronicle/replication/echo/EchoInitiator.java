@@ -25,7 +25,9 @@ public class EchoInitiator {
 	AtomicBoolean isWritingEchos = new AtomicBoolean(true);
 
 	private boolean readerStarted = false;
-	final int sinkConnectedTo = ECHO_REFLECTOR_PORT;
+	int port_echo_reflector = ECHO_REFLECTOR_PORT;
+	String address_echo_reflector = LOCALHOST;
+
 	long lastSendEchoId = -1;
 
 	public void sendEchos(String[] args) throws IOException {
@@ -37,23 +39,32 @@ public class EchoInitiator {
 		System.out.println(chronicle_out_path);
 		System.out.println(chronicle_in_path);
 
-		int outgoingSourcePort = ECHO_INITIATOR_PORT;
-		String outgoingSourceAdress = LOCALHOST;
+		int local_port = ECHO_INITIATOR_PORT;
+		String local_address = LOCALHOST;
 
-		if (args.length == 1) {
-			outgoingSourceAdress = args[0];
+		if (args.length > 0) {
+			String[] elements = args[0].split(":");
+			address_echo_reflector = elements[0];
+			port_echo_reflector = Integer.parseInt(elements[1]);
 		}
 
-		System.out.println("sending echo to be reflected from " + outgoingSourceAdress + ":" + outgoingSourcePort
-				+ " and waiting for reflections on localhost:"
-				+ sinkConnectedTo + "");
+		if (args.length == 2) {
+			String[] elements = args[1].split(":");
+			local_address = elements[0];
+			local_port = Integer.parseInt(elements[1]);
+		}
+
+		System.out.println("EchoInitiator [<address_echo_reflector>:<port_echo_reflector>] <local_port>");
+		System.out.println("- to address_echo_reflector: " + address_echo_reflector);
+		System.out.println("- to port_echo_reflector: " + port_echo_reflector);
+		System.out.println("- local_port: " + local_port);
 
 		// CHRONICLE TO CONNECT TO REMOTE CLIENT
 		Chronicle outgoingChronicle = ChronicleQueueBuilder.indexed(chronicle_out_path)
 				.source()
-				.bindAddress(outgoingSourceAdress, outgoingSourcePort)
+				.bindAddress(local_address, local_port)
 				.build();
-		System.out.println("exposing echo calls to be read from " + outgoingSourceAdress + ":" + outgoingSourcePort);
+		System.out.println("exposing echo calls to be read from " + local_address + ":" + local_port);
 		ExcerptAppender outgoingDataAppender = outgoingChronicle.createAppender();
 
 		for (int i = 0; i < echos_received.length; i++) {
@@ -112,9 +123,9 @@ public class EchoInitiator {
 		if (!readerStarted) {
 			Chronicle incomingDataChronicle = ChronicleQueueBuilder.indexed(incomingDataChroniclePath)
 					.sink()
-					.connectAddress(LOCALHOST, sinkConnectedTo)
+					.connectAddress(address_echo_reflector, port_echo_reflector)
 					.build();
-			System.out.println("connecting local sink to " + LOCALHOST + ":" + ECHO_REFLECTOR_PORT + " to read reflected echos");
+			System.out.println("connecting local sink to " + address_echo_reflector + ":" + port_echo_reflector + " to read reflected echos");
 			new ChronicleEchoReader(incomingDataChronicle).start();
 			readerStarted = true;
 		}
