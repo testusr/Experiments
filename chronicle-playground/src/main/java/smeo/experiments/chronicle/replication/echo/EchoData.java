@@ -20,6 +20,8 @@ public class EchoData implements Externalizable {
 	public long tsReflectionReceivedMs;
 	public long tsReflectionReceivedNanos;
 
+	public Externalizable payload;
+
 	public EchoData() {
 		clear();
 	}
@@ -63,6 +65,10 @@ public class EchoData implements Externalizable {
 		bytes.writeLong(tsEchoReflectedNanos);
 		bytes.writeLong(tsReflectionReceivedMs);
 		bytes.writeLong(tsReflectionReceivedNanos);
+		if (payload != null) {
+			bytes.writeBoolean(true);
+			payload.writeExternal(bytes);
+		}
 	}
 
 	@Override
@@ -74,6 +80,10 @@ public class EchoData implements Externalizable {
 		tsEchoReflectedNanos = bytes.readLong();
 		tsReflectionReceivedMs = bytes.readLong();
 		tsReflectionReceivedNanos = bytes.readLong();
+		boolean hasPayLoad = bytes.readBoolean();
+		if (hasPayLoad) {
+			payload.readExternal(bytes);
+		}
 	}
 
 	public long meanLatencyMs() {

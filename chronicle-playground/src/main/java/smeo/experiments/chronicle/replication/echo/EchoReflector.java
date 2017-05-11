@@ -10,6 +10,10 @@ import java.io.IOException;
 import static smeo.experiments.chronicle.replication.echo.EchoInitiator.ECHO_INITIATOR_PORT;
 import static smeo.experiments.chronicle.replication.echo.EchoInitiator.ECHO_REFLECTOR_PORT;
 
+/**
+ * Listen remotely on {@link EchoInitiator} for initiated echos and send them right back (echo)
+ * with receive time stamps.
+ */
 public class EchoReflector {
 
 	public static final String LOCALHOST = "localhost";
@@ -68,7 +72,7 @@ public class EchoReflector {
 		System.out.println("echo reflections exposed on " + local_address + ":" + local_port);
 		final ExcerptAppender appender = outgoingDataChronicle.createAppender();
 
-		EchoData echoData = new EchoData();
+		EchoData echoData = EchoInitiator.preallocateEchoDataObj();
 
 		boolean firstEcho = true;
 		int i = 0;
@@ -80,8 +84,9 @@ public class EchoReflector {
 					appender.startExcerpt();
 					echoData.writeExternal(appender);
 					appender.finish();
-					if (i++ % 50000 == 0) {
+					if (i++ == 50000) {
 						System.out.println("reflected " + i + " echos, last with id " + echoData.id);
+						i = 0;
 					}
 					if (firstEcho) {
 						System.out.println("reflected first echo");
