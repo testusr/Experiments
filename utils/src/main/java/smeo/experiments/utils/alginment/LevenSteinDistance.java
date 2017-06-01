@@ -1,9 +1,6 @@
 package smeo.experiments.utils.alginment;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +16,34 @@ public class LevenSteinDistance {
 
 		int[] matchesForA = align(a, b);
 		printMatchedRates(10000, a, b, matchesForA);
+		try {
+			matchedRatesToCsv(a, b, matchesForA, "/tmp/matched_result.csv");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void matchedRatesToCsv(Matchable[] a, Matchable[] b, int[] matchesAtoB, String filename) throws IOException {
+		File fout = new File(filename);
+		FileOutputStream fos = new FileOutputStream(fout);
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+
+		for (int i = 0; i < a.length; i++) {
+			final int matchedIndex = matchesAtoB[i];
+			final MatchableRate aMatchable = (MatchableRate) a[i];
+
+			if (matchedIndex != NO_MATCH) {
+				final MatchableRate bMatchable = (MatchableRate) b[matchedIndex];
+				final String csvLine = aMatchable.timestamp() + "," + aMatchable.toString() + "," + bMatchable.timestamp() + "," + bMatchable.toString() + ", "
+						+ (bMatchable.timestamp() - aMatchable.timestamp());
+				bw.write(csvLine);
+			} else {
+				final String csvLine = aMatchable.timestamp() + "," + aMatchable.toString() + ", , ,";
+				bw.write(csvLine);
+			}
+		}
+		bw.flush();
+		bw.close();
 	}
 
 	private static Matchable[] loadMatchableArrayFromCsv(int noOfLinesToLoad, String filename) {
@@ -168,19 +193,78 @@ public class LevenSteinDistance {
 		}
 	}
 
+	// private static class IntContainer {
+	// final int[][] values;
+	//
+	// public IntContainer(int xsize, int ysize) {
+	// values = new int[xsize][ysize];
+	// }
+	//
+	// public void setValue(int x, int y, int value) {
+	// values[x][y] = value;
+	// }
+	//
+	// public int getValue(int x, int y) {
+	// return values[x][y];
+	// }
+	// }
 	private static class IntContainer {
-		final int[][] values;
+		final RandomAccessFile rw;
+		final int xsize;
+		final int ysize;
 
 		public IntContainer(int xsize, int ysize) {
-			values = new int[xsize][ysize];
+			this.xsize = xsize;
+			this.ysize = ysize;
+			try {
+				File temp = File.createTempFile("temp-file-name", ".tmp");
+				rw = new RandomAccessFile(temp, "rw");
+				init(rw, xsize, ysize);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private void init(RandomAccessFile rw, int xsize, int ysize) throws IOException {
+			System.out.println("initalize file");
+
+			rw.seek(bytePos(xsize, ysize));
+			rw.writeInt(0);
+			System.out.println("initalize file finished");
+
 		}
 
 		public void setValue(int x, int y, int value) {
-			values[x][y] = value;
+			try {
+				rw.seek(bytePos(x, y));
+				rw.writeInt(value);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		public int getValue(int x, int y) {
-			return values[x][y];
+			try {
+				rw.seek(bytePos(x, y));
+				return rw.readInt();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private int bytePos(int x, int y) {
+			return (x + (y * xsize)) * Integer.BYTES;
 		}
 	}
+
+	// public static void main(String[] args) {
+	// IntContainer intContainer = new IntContainer(10, 10);
+	// System.out.println(intContainer.getValue(0, 0));
+	// System.out.println(intContainer.getValue(9, 9));
+	// intContainer.setValue(1, 0, 1);
+	// System.out.println(intContainer.getValue(1, 0));
+	// intContainer.setValue(2, 0, Integer.MAX_VALUE);
+	// System.out.println(intContainer.getValue(1, 0));
+	// System.out.println(intContainer.getValue(2, 0));
+	// }
 }
