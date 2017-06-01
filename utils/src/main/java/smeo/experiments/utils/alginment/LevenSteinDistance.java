@@ -11,13 +11,13 @@ public class LevenSteinDistance {
 	public static final int NO_MATCH = -1;
 
 	public static void main(String[] args) {
-		Matchable[] a = loadMatchableArrayFromCsv(10000, args[0]);
-		Matchable[] b = loadMatchableArrayFromCsv(10000, args[1]);
+		Matchable[] a = loadMatchableArrayFromCsv(1000000, args[0]);
+		Matchable[] b = loadMatchableArrayFromCsv(1000000, args[1]);
 
 		int[] matchesForA = align(a, b);
 		printMatchedRates(10000, a, b, matchesForA);
 		try {
-			matchedRatesToCsv(a, b, matchesForA, "/tmp/matched_result.csv");
+			matchedRatesToCsv(a, b, matchesForA, "/home/truehl/matched_result.csv");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -225,10 +225,11 @@ public class LevenSteinDistance {
 			}
 		}
 
-		private void init(RandomAccessFile rw, int xsize, int ysize) throws IOException {
+		private void init(RandomAccessFile rw, long xsize, long ysize) throws IOException {
 			System.out.println("initalize file");
 
-			rw.seek(bytePos(xsize, ysize));
+			final long pos = bytePos(xsize, ysize);
+			rw.seek(pos);
 			rw.writeInt(0);
 			System.out.println("initalize file finished");
 
@@ -252,7 +253,7 @@ public class LevenSteinDistance {
 			}
 		}
 
-		private int bytePos(int x, int y) {
+		private long bytePos(long x, long y) {
 			return (x + (y * xsize)) * Integer.BYTES;
 		}
 	}
