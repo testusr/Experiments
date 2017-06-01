@@ -59,20 +59,22 @@ public class LevenSteinDistance {
 	public static int[] align(Matchable[] a, Matchable[] b) {
 		int[] bMatchOnA = new int[Math.max(a.length, b.length)];
 
-		int[][] T = new int[a.length + 1][b.length + 1];
+		final int xsize = a.length + 1;
+		final int ysize = b.length + 1;
+		IntContainer T = new IntContainer(xsize, ysize);
 
 		for (int i = 0; i <= a.length; i++)
-			T[i][0] = i;
+			T.setValue(i, 0, i);
 
 		for (int i = 0; i <= b.length; i++)
-			T[0][i] = i;
+			T.setValue(0, i, i);
 
 		for (int i = 1; i <= a.length; i++) {
 			for (int j = 1; j <= b.length; j++) {
 				if (a[i - 1].matches(b[j - 1]))
-					T[i][j] = T[i - 1][j - 1];
+					T.setValue(i, j, T.getValue((i - 1), (j - 1)));
 				else
-					T[i][j] = Math.min(T[i - 1][j], T[i][j - 1]) + 1;
+					T.setValue(i, j, (Math.min(T.getValue((i - 1), j), T.getValue(i, (j - 1))) + 1));
 			}
 		}
 
@@ -80,17 +82,17 @@ public class LevenSteinDistance {
 		int notMatcheBEntries = 0;
 		int notMatcheAEntries = 0;
 		for (int i = a.length, j = b.length; i > 0 || j > 0;) {
-			if (i > 0 && T[i][j] == T[i - 1][j] + 1) {
+			if (i > 0 && T.getValue(i, j) == T.getValue((i - 1), j) + 1) {
 				bMatchOnA[--i] = NO_MATCH;
 				notMatcheAEntries++;
 				// aa.append(String.valueOf(a[i])).append("|");
 				// aa.append("-").append("|");
-			} else if (j > 0 && T[i][j] == T[i][j - 1] + 1) {
+			} else if (j > 0 && T.getValue(i, j) == T.getValue(i, (j - 1)) + 1) {
 				// aMatchOnB[--j] = NO_MATCH;
 				--j;
 				notMatcheBEntries++;
 				// aa.append("-").append("|");
-			} else if (i > 0 && j > 0 && T[i][j] == T[i - 1][j - 1]) {
+			} else if (i > 0 && j > 0 && T.getValue(i, j) == T.getValue((i - 1), (j - 1))) {
 				bMatchOnA[--i] = --j;
 
 				// aa.append(String.valueOf(a[i])).append("|");
@@ -163,6 +165,22 @@ public class LevenSteinDistance {
 				System.err.println("could not create matchable rate from csv line '" + csvLine + "'");
 			}
 			return null;
+		}
+	}
+
+	private static class IntContainer {
+		final int[][] values;
+
+		public IntContainer(int xsize, int ysize) {
+			values = new int[xsize][ysize];
+		}
+
+		public void setValue(int x, int y, int value) {
+			values[x][y] = value;
+		}
+
+		public int getValue(int x, int y) {
+			return values[x][y];
 		}
 	}
 }
