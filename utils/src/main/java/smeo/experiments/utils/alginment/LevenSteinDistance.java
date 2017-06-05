@@ -2,6 +2,7 @@ package smeo.experiments.utils.alginment;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -11,8 +12,13 @@ public class LevenSteinDistance {
     public static final int NO_MATCH = -1;
 
     public static void main(String[] args) {
+        System.out.println("load arrays " + new Date());
         Matchable[] a = loadMatchableArrayFromCsv(1000000, args[0]);
         Matchable[] b = loadMatchableArrayFromCsv(1000000, args[1]);
+
+        System.out.println("start matching rates" + new Date());
+        System.out.println("a size " + a.length);
+        System.out.println("b size " + b.length);
 
         int[] matchesForA = align(a, b);
         printMatchedRates(10000, a, b, matchesForA);
@@ -21,6 +27,8 @@ public class LevenSteinDistance {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("done matching rates" + new Date());
+
     }
 
     private static void matchedRatesToCsv(Matchable[] a, Matchable[] b, int[] matchesAtoB, String filename) throws IOException {
@@ -280,6 +288,7 @@ public class LevenSteinDistance {
 
         private void init(int rows) {
             int noOfBlocks = (rows / BLOCK_ROWS) + 1;
+            System.out.println("no of blocks: " + noOfBlocks);
             for (int i = 0; i < noOfBlocks; i++) {
                 addBlock();
             }
