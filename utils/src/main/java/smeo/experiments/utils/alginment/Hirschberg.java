@@ -4,6 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static java.util.Arrays.copyOfRange;
@@ -182,13 +183,14 @@ public class Hirschberg
 		// System.out.print("y = ");
 		// y = in.next();
 
-		Matchable[] a = loadMatchableArrayFromCsv(1000, args[0]);
-		Matchable[] b = loadMatchableArrayFromCsv(1000, args[1]);
+		Matchable[] a = loadMatchableArrayFromCsv(100000, args[0]);
+		Matchable[] b = loadMatchableArrayFromCsv(100000, args[1]);
 
 		K = new int[2][b.length + 1]; // Linear space !!!
 
+		System.out.println("start matching " + new Date());
 		Matchable[] z = findLCS_String(a, b);
-
+		System.out.println("finished matching " + new Date());
 		printMatches(30, z);
 		System.out.println("LCS = " + z.length);
 
