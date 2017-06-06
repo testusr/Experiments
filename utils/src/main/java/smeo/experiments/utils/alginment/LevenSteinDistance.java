@@ -1,9 +1,12 @@
 package smeo.experiments.utils.alginment;
 
+import com.google.common.cache.*;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by smeo on 31.05.17.
@@ -90,53 +93,58 @@ public class LevenSteinDistance {
     }
 
     public static int[] align(Matchable[] a, Matchable[] b) {
-        int[] bMatchOnA = new int[Math.max(a.length, b.length)];
+        try {
+            int[] bMatchOnA = new int[Math.max(a.length, b.length)];
 
-        final int xsize = a.length + 1;
-        final int ysize = b.length + 1;
-        IntContainer T = new IntContainer(xsize, ysize);
+            final int xsize = a.length + 1;
+            final int ysize = b.length + 1;
+            IntContainer T = new IntContainer(String.valueOf(System.nanoTime()), xsize, ysize);
 
-        for (int i = 0; i <= a.length; i++)
-            T.setValue(i, 0, i);
+            for (int i = 0; i <= a.length; i++)
+                T.setValue(i, 0, i);
 
-        for (int i = 0; i <= b.length; i++)
-            T.setValue(0, i, i);
+            for (int i = 0; i <= b.length; i++)
+                T.setValue(0, i, i);
 
-        for (int i = 1; i <= a.length; i++) {
-            for (int j = 1; j <= b.length; j++) {
-                if (a[i - 1].matches(b[j - 1]))
-                    T.setValue(i, j, T.getValue((i - 1), (j - 1)));
-                else
-                    T.setValue(i, j, (Math.min(T.getValue((i - 1), j), T.getValue(i, (j - 1))) + 1));
+            for (int i = 1; i <= a.length; i++) {
+                for (int j = 1; j <= b.length; j++) {
+                    if (a[i - 1].matches(b[j - 1]))
+                        T.setValue(i, j, T.getValue((i - 1), (j - 1)));
+                    else
+                        T.setValue(i, j, (Math.min(T.getValue((i - 1), j), T.getValue(i, (j - 1))) + 1));
+                }
             }
+
+            StringBuilder aa = new StringBuilder(), bb = new StringBuilder();
+            int notMatcheBEntries = 0;
+            int notMatcheAEntries = 0;
+            for (int i = a.length, j = b.length; i > 0 || j > 0; ) {
+                if (i > 0 && T.getValue(i, j) == T.getValue((i - 1), j) + 1) {
+                    bMatchOnA[--i] = NO_MATCH;
+                    notMatcheAEntries++;
+                    // aa.append(String.valueOf(a[i])).append("|");
+                    // aa.append("-").append("|");
+                } else if (j > 0 && T.getValue(i, j) == T.getValue(i, (j - 1)) + 1) {
+                    // aMatchOnB[--j] = NO_MATCH;
+                    --j;
+                    notMatcheBEntries++;
+                    // aa.append("-").append("|");
+                } else if (i > 0 && j > 0 && T.getValue(i, j) == T.getValue((i - 1), (j - 1))) {
+                    bMatchOnA[--i] = --j;
+
+                    // aa.append(String.valueOf(a[i])).append("|");
+                    // aa.append(String.valueOf(b[j])).append("|");
+                }
+                // aa.append("\n");
+            }
+            System.out.println("not matched from b sequence (messages received not send): " + notMatcheBEntries);
+            System.out.println("not matched from a sequence (message loss) : " + notMatcheAEntries);
+
+            return bMatchOnA;
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
 
-        StringBuilder aa = new StringBuilder(), bb = new StringBuilder();
-        int notMatcheBEntries = 0;
-        int notMatcheAEntries = 0;
-        for (int i = a.length, j = b.length; i > 0 || j > 0; ) {
-            if (i > 0 && T.getValue(i, j) == T.getValue((i - 1), j) + 1) {
-                bMatchOnA[--i] = NO_MATCH;
-                notMatcheAEntries++;
-                // aa.append(String.valueOf(a[i])).append("|");
-                // aa.append("-").append("|");
-            } else if (j > 0 && T.getValue(i, j) == T.getValue(i, (j - 1)) + 1) {
-                // aMatchOnB[--j] = NO_MATCH;
-                --j;
-                notMatcheBEntries++;
-                // aa.append("-").append("|");
-            } else if (i > 0 && j > 0 && T.getValue(i, j) == T.getValue((i - 1), (j - 1))) {
-                bMatchOnA[--i] = --j;
-
-                // aa.append(String.valueOf(a[i])).append("|");
-                // aa.append(String.valueOf(b[j])).append("|");
-            }
-            // aa.append("\n");
-        }
-        System.out.println("not matched from b sequence (messages received not send): " + notMatcheBEntries);
-        System.out.println("not matched from a sequence (message loss) : " + notMatcheAEntries);
-
-        return bMatchOnA;
     }
 
     private static boolean equals(double b, double a) {
@@ -269,15 +277,15 @@ public class LevenSteinDistance {
 */
 
     private static class IntContainer {
-        private static final int BLOCK_ROWS = 10000;
+        private static final int BLOCK_ROWS = 1000;
         private final int columns;
-        private final int rows;
+        private final String containerId;
 
-        List<int[][]> dataBlocks = new ArrayList<>();
+        private DataBlockCache dataBlockCache;
 
-        public IntContainer(int columns, int rows) {
+        public IntContainer(String id, int columns, int rows) {
             this.columns = columns;
-            this.rows = rows;
+            this.containerId = id;
 
             init(rows);
         }
@@ -288,11 +296,13 @@ public class LevenSteinDistance {
 
         private void init(int rows) {
             int noOfBlocks = (rows / BLOCK_ROWS) + 1;
-            System.out.println("no of blocks: " + noOfBlocks);
-            for (int i = 0; i < noOfBlocks; i++) {
-                addBlock();
-            }
+            dataBlockCache = new DataBlockCache(containerId, BLOCK_ROWS);
+//            System.out.println("no of blocks: " + noOfBlocks);
+//            for (int i = 0; i < noOfBlocks; i++) {
+//                addBlock();
+//            }
         }
+
 
         private void addBlock() {
             int[][] newBlock = new int[BLOCK_ROWS][columns];
@@ -303,16 +313,106 @@ public class LevenSteinDistance {
             }
         }
 
-        public void setValue(int column, int row, int value) {
-            int[][] dataBlock = dataBlocks.get(blockIndex(row));
+        public void setValue(int column, int row, int value) throws ExecutionException {
+            int[][] dataBlock = dataBlockCache.get(blockIndex(row));
             int rowInBlock = row % BLOCK_ROWS;
             dataBlock[rowInBlock][column] = value;
         }
 
-        public int getValue(int column, int row) {
-            int[][] dataBlock = dataBlocks.get(blockIndex(row));
+        public int getValue(int column, int row) throws ExecutionException {
+            int[][] dataBlock = dataBlockCache.get(blockIndex(row));
             int rowInBlock = row % BLOCK_ROWS;
             return dataBlock[rowInBlock][column];
+        }
+
+        private class DataBlockCache {
+            LoadingCache<Integer, int[][]> cache;
+
+            public DataBlockCache(String id, int blockRows) {
+                cache = CacheBuilder.newBuilder()
+                        .maximumSize(2)
+                        .removalListener(new RemovalListener<Integer, int[][]>() {
+                            @Override
+                            public void onRemoval(RemovalNotification<Integer, int[][]> removalNotification) {
+                                try {
+                                    writeBlock(removalNotification.getKey(), removalNotification.getValue());
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        })
+                        .build(new CacheLoader<Integer, int[][]>() {
+                            public int[][] load(Integer key) throws IOException {
+                                int[][] loadedBlock = loadBlock(key);
+                                if (loadedBlock == null) {
+                                    loadedBlock = newBlock();
+                                }
+                                return loadedBlock;
+                            }
+
+                        });
+            }
+
+            public int[][] get(Integer key) throws ExecutionException {
+                return cache.get(key);
+            }
+
+            private void writeBlock(Integer key, int[][] value) throws IOException {
+                System.out.println("write block from file");
+                long start = System.currentTimeMillis();
+                final File file = new File(filename(containerId, key));
+                FileOutputStream fo = new FileOutputStream(file);
+                for (int ir = 0; ir < BLOCK_ROWS; ir++) {
+                    for (int ic = 0; ic < columns; ic++) {
+                        fo.write(value[ir][ic]);
+                    }
+                }
+                fo.flush();
+                fo.close();
+                long time = System.currentTimeMillis() - start;
+                System.out.println("file written, took " + time + "ms");
+
+            }
+
+            private String filename(String containerId, Integer key) {
+                return "/tmp/levenst-" + containerId + "key";
+            }
+
+            private int[][] loadBlock(int key) throws IOException {
+                System.out.println("load block from file");
+                long start = System.currentTimeMillis();
+
+                int[][] newBlock = null;
+                final File file = new File(filename(containerId, key));
+                if (file.exists()) {
+                    newBlock = new int[BLOCK_ROWS][columns];
+                    FileInputStream fo = new FileInputStream(file);
+                    for (int ir = 0; ir < BLOCK_ROWS; ir++) {
+                        for (int ic = 0; ic < columns; ic++) {
+                            newBlock[ir][ic] = fo.read();
+                        }
+                    }
+                    long time = System.currentTimeMillis() - start;
+                    System.out.println("file loading, took " + time + "ms");
+                } else {
+                    System.out.println("File does not exist");
+                }
+
+                return newBlock;
+
+            }
+
+            private int[][] newBlock() {
+                System.out.println("creat new in memory block");
+                int[][] newBlock = new int[BLOCK_ROWS][columns];
+                for (int ir = 0; ir < BLOCK_ROWS; ir++) {
+                    for (int ic = 0; ic < columns; ic++) {
+                        newBlock[ir][ic] = 0;
+                    }
+                }
+                return newBlock;
+            }
+
         }
     }
 
