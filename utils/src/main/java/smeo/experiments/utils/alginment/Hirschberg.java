@@ -1,171 +1,109 @@
 package smeo.experiments.utils.alginment;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
-import static java.util.Arrays.copyOfRange;
 import static smeo.experiments.utils.alginment.Hirschberg.MatchableRate.*;
 
-public class Hirschberg
-{
-	static int K[][];
+public class Hirschberg<T extends Hirschberg.MatchableRate> {
 
-	public static Matchable[] findLCS_String(Matchable[] x, Matchable[] y)
-	{
-		int k, i, j;
-		int m, n;
-		Matchable[] y1, y2;
-		Matchable[] x1, x2;
-		String C = "";
+	public List<T> lcs(T[] a, T[] b) {
+		int n = a.length;
+		int m = b.length;
 
-		m = x.length; // m = length of x
-		n = y.length; // n = length of y
+		switch (n) {
+		case 0:
+			return Collections.<T> emptyList();
 
-		/*
-		 * =====================================================
-		 * Base case 1: ""
-		 * =====================================================
-		 */
-		if (m == 0)
-		{
-			return new Matchable[0]; // LCS = ""
+		case 1:
+			final T t = a[0];
+			for (int i = 0; i < m; i++) {
+				if (b[i].matches(t)) {
+					return Collections.singletonList(t);
+				}
+			}
+			return Collections.<T> emptyList();
+
+		default:
+			int i = n / 2;
+			T[] aHead = Arrays.copyOfRange(a, 0, i);
+			T[] aTail = Arrays.copyOfRange(a, i, n);
+			int[] forward = calculateLcs(aHead, b);
+			int[] backward = calculateLcs(reverse(aTail), reverse(b));
+
+			int k = indexOfBiggerSum(forward, backward);
+
+			T[] bHead = Arrays.copyOfRange(b, 0, k);
+			T[] bTail = Arrays.copyOfRange(b, k, m);
+			return concatenate(lcs(aHead, bHead), lcs(aTail, bTail));
 		}
-
-		/*
-		 * =====================================================
-		 * Base case 2: x = "?"
-		 * =====================================================
-		 */
-		if (m == 1)
-		{
-			/*
-			 * =====================================
-			 * The input x consists of 1 character
-			 * Find the single common character in y
-			 * =====================================
-			 */
-			for (i = 0; i < n; i++)
-				if (y[i].matchTo(x[0]))
-					return (x); // Found: LCS = x
-
-			return new Matchable[0]; // Not found: LCS = ""
-		}
-
-		/*
-		 * =====================================================
-		 * General case: x has 2 or more characters
-		 * =====================================================
-		 */
-		int c = solveLCS(x, y); // This is the sum of the correct split
-		int c1 = 0, c2 = 0;
-
-		/*
-		 * System.out.println("LCS( " + x + "," + y + ") = " + c );
-		 */
-
-		x1 = copyOfRange(x, 0, m / 2); // First half of x
-		x2 = copyOfRange(x, m / 2, m); // Second half of x
-
-		/*
-		 * --------------------------------------------------
-		 * Find a correct split of y
-		 * --------------------------------------------------
-		 */
-		for (k = 0; k < n; k++)
-		{
-
-			c1 = solveLCS(x1, copyOfRange(y, 0, k)); // LCS of first half
-			c2 = solveLCS(x2, copyOfRange(y, k, n)); // LCS of second half
-			/*
-			 * System.out.println("Trying: ");
-			 * System.out.println(" " + x1
-			 * + "<->" + y.substring(0, k) + " ==> " + c1);
-			 * System.out.println(" " + x2
-			 * + "<->" + y.substring(j, k) + " ==> " + c2);
-			 */
-			if (c1 + c2 == c)
-				break; // Found a correct split of y !!!
-		}
-		/*
-		 * if ( c1 + c2 != c )
-		 * {
-		 * System.out.println("x1 + x2 == z NOT FOUND ???");
-		 * }
-		 */
-		/*
-		 * --------------------------------------------------
-		 * Here: k = a correct split of y ....
-		 * 
-		 * Solve smaller problems
-		 * --------------------------------------------------
-		 */
-
-		y1 = copyOfRange(y, 0, k);
-		y2 = copyOfRange(y, k, n);
-
-		// System.out.println("   LCS_String(" + x1.length + "," + y1.length + ")");
-		Matchable[] sol1 = findLCS_String(x1, y1);
-
-		// System.out.println("   LCS_String(" + x2.length + "," + y2.length + ")");
-		Matchable[] sol2 = findLCS_String(x2, y2);
-
-		/*
-		 * ------------------------------------------------------------
-		 * Use solution of smaller problems to solve original problem
-		 * ------------------------------------------------------------
-		 */
-		return ArrayUtils.addAll(sol1, sol2);
 	}
 
-	/*
-	 * ==============================================================
-	 * solveLCS(x,y): find the number of characters in the
-	 * Longest Common Substring of x and y
-	 * 
-	 * This is the linear space algorithm to find length of LCS
-	 * Except: I ADDED a statement to return K[1][n] at the end
-	 * ==============================================================
+	/** Returns the index in which the two LCS meet. */
+	private int indexOfBiggerSum(int[] forward, int[] backward) {
+		int tmp, k = -1, max = -1, m = forward.length - 1;
+		for (int j = 0; j <= m; j++) {
+			tmp = forward[j] + backward[m - j];
+			if (tmp > max) {
+				max = tmp;
+				k = j;
+			}
+		}
+		return k;
+	}
+
+	/**
+	 * Uses the Smith-Waterman algorithm to calculate the score table
+	 * (or distance table) using only 2 rows.
+	 *
 	 */
-	public static int solveLCS(Matchable[] x, Matchable[] y)
-	{
-		int i, j;
+	private int[] calculateLcs(T[] a, T[] b) {
+		final int m = b.length;
 
-		if (x.length == 0 || y.length == 0)
-			return 0;
+		System.out.println(System.currentTimeMillis() + " - calculateLcs a: " + a.length + " b: " + b.length);
+		int[][] array = new int[2][m + 1];
+		int[] curr = array[0];
+		int[] prev = array[1];
+		int[] tmp;
 
-		for (j = 0; j < y.length + 1; j++)
-			K[1][j] = 0; // x = "" ===> LCS = 0
+		for (T x : a) {
+			// swap(curr, prev)
+			tmp = curr;
+			curr = prev;
+			prev = tmp;
 
-		for (i = 1; i < x.length + 1; i++)
-		{
-			/*
-			 * =====================================================
-			 * Recycle phase: copy row K[1][...] to row K[0][...]
-			 * =====================================================
-			 */
-			for (j = 0; j < y.length + 1; j++)
-				K[0][j] = K[1][j];
-
-			K[1][0] = 0; // y = "" ===> LCS = 0
-
-			for (j = 1; j < y.length + 1; j++)
-			{
-				if (x[i - 1].matchTo(y[j - 1]))
-				{
-					K[1][j] = K[0][j - 1] + 1;
-				}
-				else
-				{
-					K[1][j] = Math.max(K[0][j], K[1][j - 1]);
+			// it's the Smith-Waterman algorithm
+			for (int i = 0; i < m; i++) {
+				T y = b[i];
+				if (x.matches(y)) {
+					curr[i + 1] = prev[i] + 1;
+				} else {
+					curr[i + 1] = Math.max(curr[i], prev[i + 1]);
 				}
 			}
 		}
+		return curr;
+	}
 
-		return K[1][y.length]; // ***** I added this
+	List<T> concatenate(List<T> a, List<T> b) {
+		if (a.isEmpty()) {
+			return b;
+		}
+		if (b.isEmpty()) {
+			return a;
+		}
+		List<T> l = new ArrayList<>(a.size() + b.size());
+		l.addAll(a);
+		l.addAll(b);
+		return l;
+	}
+
+	/** The given array is not modified. */
+	T[] reverse(final T[] array) {
+		@SuppressWarnings("unchecked")
+		T[] reversed = array.clone();
+		Collections.reverse(Arrays.asList(reversed));
+		return reversed;
 	}
 
 	public static void main(String[] args)
@@ -183,35 +121,67 @@ public class Hirschberg
 		// System.out.print("y = ");
 		// y = in.next();
 
-		Matchable[] a = loadMatchableArrayFromCsv(100000, args[0]);
-		Matchable[] b = loadMatchableArrayFromCsv(100000, args[1]);
+		Hirschberg.MatchableRate[] a = loadMatchableArrayFromCsv(1000000, args[0]);
+		Hirschberg.MatchableRate[] b = loadMatchableArrayFromCsv(1000000, args[1]);
 
-		K = new int[2][b.length + 1]; // Linear space !!!
-
+		Hirschberg hirschberg = new Hirschberg<MatchableRate>();
 		System.out.println("start matching " + new Date());
-		Matchable[] z = findLCS_String(a, b);
+		final List lcs = hirschberg.lcs(a, b);
+
+		assignMatches(lcs, a, b);
+		Hirschberg.MatchableRate[] z = (Hirschberg.MatchableRate[]) lcs.toArray(new Hirschberg.MatchableRate[lcs.size()]);
+
 		System.out.println("finished matching " + new Date());
-		printMatches(30, z);
+		printMatches(30, a);
 		System.out.println("LCS = " + z.length);
+		System.out.println("Sent (aseq)= " + a.length);
+		System.out.println("Received (bseq) = " + a.length);
+		System.out.println("Not Matched (aseq) / not received from b = " + notMatchCount(b));
+		System.out.println("Not Matched (bseq) / never been send by a= " + notMatchCount(a));
 
 		try {
-			matchedRatesToCsv("/tmp/matches_hirschber.csv", z);
+			matchedRatesToCsv("/tmp/matches_hirschberg_asequence.csv", a);
+			matchedRatesToCsv("/tmp/matches_hirschberg_bsequence.csv", b);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	interface Matchable {
-		boolean matches(Matchable toMatch);
-
-		boolean matchTo(Matchable matchable);
+	private static int notMatchCount(Hirschberg.MatchableRate[] a) {
+		int notMatched = 0;
+		for (int i = 0; i < a.length; i++) {
+			if (a[i].match() == null) {
+				notMatched++;
+			}
+		}
+		return notMatched;
 	}
 
-	public static class MatchableRate implements Matchable {
+	private static void assignMatches(List<Hirschberg.MatchableRate> lcs, Hirschberg.MatchableRate[] a, Hirschberg.MatchableRate[] b) {
+		int aIndex = 0;
+		int bIndex = 0;
+		for (Hirschberg.MatchableRate currLcsRate : lcs) {
+			Hirschberg.MatchableRate firstAMatch = null;
+			Hirschberg.MatchableRate firstBMatch = null;
+			for (; aIndex < a.length && firstAMatch == null; aIndex++) {
+				firstAMatch = currLcsRate.matches(a[aIndex]) ? a[aIndex] : null;
+			}
+			for (; bIndex < b.length && firstBMatch == null; bIndex++) {
+				firstBMatch = currLcsRate.matches(b[bIndex]) ? b[bIndex] : null;
+			}
+
+			if (firstAMatch != null && firstBMatch != null) {
+				firstAMatch.assignMatch(firstBMatch);
+				firstBMatch.assignMatch(firstAMatch);
+			}
+		}
+	}
+
+	public static class MatchableRate {
 		long timestamp;
 		double rate;
-		private Matchable match;
+		private MatchableRate match;
 
 		public MatchableRate(long timestamp, double rate) {
 			this.timestamp = timestamp;
@@ -226,20 +196,18 @@ public class Hirschberg
 			return rate;
 		}
 
-		@Override
-		public boolean matches(Matchable toMatch) {
+		public boolean matches(MatchableRate toMatch) {
 			if (toMatch instanceof MatchableRate) {
 				return (Math.abs(((MatchableRate) toMatch).rate - rate) < 0.000001);
 			}
 			return false;
 		}
 
-		Matchable match() {
+		MatchableRate match() {
 			return match;
 		}
 
-		@Override
-		public boolean matchTo(Matchable matchable) {
+		public boolean assignMatch(MatchableRate matchable) {
 			if (matches(matchable)) {
 				this.match = matchable;
 				return true;
@@ -275,13 +243,13 @@ public class Hirschberg
 			return null;
 		}
 
-		public static Matchable[] loadMatchableArrayFromCsv(int noOfLinesToLoad, String filename) {
-			List<Matchable> matchableList = new ArrayList<>();
+		public static MatchableRate[] loadMatchableArrayFromCsv(int noOfLinesToLoad, String filename) {
+			List<MatchableRate> matchableList = new ArrayList<>();
 			int nLines = 0;
 			try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 				String line;
 				while ((line = br.readLine()) != null && nLines < noOfLinesToLoad) {
-					Matchable matchable = MatchableRate.fromCsv(line, ',');
+					MatchableRate matchable = MatchableRate.fromCsv(line, ',');
 					if (matchable != null) {
 						matchableList.add(matchable);
 						nLines++;
@@ -292,10 +260,10 @@ public class Hirschberg
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			return matchableList.toArray(new Matchable[matchableList.size()]);
+			return matchableList.toArray(new MatchableRate[matchableList.size()]);
 		}
 
-		public static void matchedRatesToCsv(String filename, Matchable[] matches) throws IOException {
+		public static void matchedRatesToCsv(String filename, MatchableRate[] matches) throws IOException {
 			File fout = new File(filename);
 			FileOutputStream fos = new FileOutputStream(fout);
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
@@ -318,8 +286,8 @@ public class Hirschberg
 			System.out.println("matches written to file '" + filename + "'");
 		}
 
-		public static void printMatches(int noOfRatesToPrint, Matchable[] matches) {
-			for (int i = 0; i < noOfRatesToPrint; i++) {
+		public static void printMatches(int noOfRatesToPrint, MatchableRate[] matches) {
+			for (int i = 0; i < noOfRatesToPrint && i < matches.length; i++) {
 				MatchableRate currMachable = (MatchableRate) matches[i];
 				MatchableRate matched = (MatchableRate) currMachable.match();
 				if (matched != null) {
