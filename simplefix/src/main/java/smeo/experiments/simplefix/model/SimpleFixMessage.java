@@ -76,7 +76,7 @@ public class SimpleFixMessage {
         return this;
     }
 
-    private SimpleFixField nextFixFieldFromPool() {
+    SimpleFixField nextFixFieldFromPool() {
         for (int i = 0; i < fieldPool.size(); i++) {
             final SimpleFixField currField = fieldPool.get(i);
             if (!currField.hasValue()) {
