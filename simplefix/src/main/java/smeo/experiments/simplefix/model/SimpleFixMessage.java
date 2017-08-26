@@ -1,3 +1,4 @@
+
 package smeo.experiments.simplefix.model;
 
 import java.nio.ByteBuffer;
@@ -12,17 +13,65 @@ public class SimpleFixMessage {
     public final byte EQUALS = '=';
     List<SimpleFixMessageValue> messageValues = new ArrayList<>();
     List<SimpleFixField> fieldPool = new ArrayList<>();
-    List<SimpleFixComponent> componentPool;
 
+    // 8
     SimpleFixField beginString = new SimpleFixField();
+    // 9
     SimpleFixField bodyLength = new SimpleFixField();
+    // 35
     SimpleFixField messageType = new SimpleFixField();
+    // 49
     SimpleFixField senderCompanyID = new SimpleFixField();
+    // 50
     SimpleFixField senderSubID = new SimpleFixField();
+    //56
     SimpleFixField targetCompanyId = new SimpleFixField();
+    //57
     SimpleFixField targetSubId = new SimpleFixField();
+    //10
     SimpleFixField checkSum = new SimpleFixField();
 
+    public void addValue(SimpleFixField value) {
+        switch (value.tag()) {
+            case 8: {
+                beginString.internalize(value);
+                break;
+            }
+            case 9: {
+                bodyLength.internalize(value);
+                break;
+            }
+            case 35: {
+                messageType.internalize(value);
+                break;
+            }
+            case 49: {
+                senderCompanyID.internalize(value);
+                break;
+            }
+            case 50: {
+                senderSubID.internalize(value);
+                break;
+            }
+            case 56: {
+                targetCompanyId.internalize(value);
+                break;
+            }
+            case 57: {
+                targetSubId.internalize(value);
+                break;
+            }
+            case 10: {
+                checkSum.internalize(value);
+                break;
+            }
+            default: {
+                final SimpleFixField simpleFixField = nextFixFieldFromPool();
+                simpleFixField.internalize(value);
+                messageValues.add(simpleFixField);
+            }
+        }
+    }
 
     public void beginString(CharSequence value) {
         beginString.setValue(FixTags.BeginString.tag, value);
@@ -32,20 +81,55 @@ public class SimpleFixMessage {
         messageType.setValue(FixTags.MsgType.tag, value);
     }
 
+    public CharSequence messageType() {
+        if (messageType.hasValue()) {
+            return messageType.pureStringValue();
+        }
+        return null;
+    }
+
     public void senderCompanyID(CharSequence value) {
         senderCompanyID.setValue(FixTags.SenderCompID.tag, value);
+    }
+
+    public CharSequence senderCompanyID() {
+        if (senderCompanyID.hasValue()) {
+            return senderCompanyID.pureStringValue();
+        }
+        return null;
     }
 
     public void senderSubID(CharSequence value) {
         senderSubID.setValue(FixTags.SenderSubID.tag, value);
     }
 
+    public CharSequence senderSubID() {
+        if (senderSubID.hasValue()) {
+            return senderSubID.pureStringValue();
+        }
+        return null;
+    }
+
     public void targetCompanyId(CharSequence value) {
         targetCompanyId.setValue(FixTags.TargetCompID.tag, value);
     }
 
+    public CharSequence targetCompanyId() {
+        if (targetCompanyId.hasValue()) {
+            return targetCompanyId.pureStringValue();
+        }
+        return null;
+    }
+
     public void targetSubId(CharSequence value) {
         targetSubId.setValue(FixTags.TargetSubID.tag, value);
+    }
+
+    public CharSequence targetSubId() {
+        if (targetSubId.hasValue()) {
+            return targetSubId.pureStringValue();
+        }
+        return null;
     }
 
     public SimpleFixMessage addTag(int tag, String value) {
@@ -131,4 +215,22 @@ public class SimpleFixMessage {
             bb.putChar(SimpleFixMessageValue.ENTRY_SEPARATOR);
         }
     }
+
+    public void refurbish() {
+        beginString.clear();
+        bodyLength.clear();
+        messageType.clear();
+        senderCompanyID.clear();
+        senderSubID.clear();
+        targetCompanyId.clear();
+        targetSubId.clear();
+        checkSum.clear();
+        for (int i = 0; i < this.messageValues.size(); i++) {
+            messageValues.get(i).clear();
+        }
+        messageValues.clear();
+
+    }
+
+
 }

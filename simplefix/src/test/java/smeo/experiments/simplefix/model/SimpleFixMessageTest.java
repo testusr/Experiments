@@ -4,10 +4,8 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-/**
- * Created by smeo on 20.08.17.
- */
-public class SimpleFixFieldTest {
+public class SimpleFixMessageTest {
+
     public static final int MDEntry_Type_BID = 0;
     public static final int MDEntry_Type_OFFER = 1;
     public static final int MdQuoteType_Tradable = 1;
@@ -49,7 +47,7 @@ public class SimpleFixFieldTest {
 
     }
 
-    private void writeAsString(SimpleFixMessage fixMessage) {
+    public static void writeAsString(SimpleFixMessage fixMessage) {
         final ByteBuffer byteBuffer = ByteBuffer.allocate(2098);
         fixMessage.writeToByteBuffer(byteBuffer);
         byteBuffer.flip();

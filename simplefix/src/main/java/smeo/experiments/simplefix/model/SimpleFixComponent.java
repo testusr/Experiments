@@ -31,6 +31,11 @@ public class SimpleFixComponent implements SimpleFixMessageValue {
 	}
 
 	@Override
+	public CharSequence pureStringValue() {
+		return null;
+	}
+
+	@Override
 	public int tag() {
 		return tag;
 	}

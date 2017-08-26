@@ -6,32 +6,26 @@ import java.nio.ByteBuffer;
  * Created by truehl on 21.08.17.
  */
 public class SimpleFixMessageParser {
+    private static final int CHECK_SUM_TAG = 10;
+    private static final int BEGIN_STRING_TAG = 8;
+
     SimpleFixField tempFixField = new SimpleFixField();
     StringBuffer tempBuffer = new StringBuffer();
 
-    public void parse(SimpleFixMessage targetMessage, ByteBuffer srcByteBuffer) {
-        SimpleFixField fixField = parseNextFixField(srcByteBuffer, tempFixField);
-    }
-
-    public void parseNextFixField(ByteBuffer srcByteBuffer, SimpleFixMessage simpleFixMessage) {
-        while (srcByteBuffer.hasRemaining()) {
-            System.out.println(parseNextFixField(srcByteBuffer, simpleFixMessage.nextFixFieldFromPool()));
-        }
-    }
 
     public SimpleFixField parseNextFixField(ByteBuffer srcByteBuffer) {
         parseNextFixField(srcByteBuffer, tempFixField);
         return tempFixField;
     }
 
-    public SimpleFixField parseNextFixField(ByteBuffer srcByteBuffer, SimpleFixField targetField) {
+    public void parseNextFixField(ByteBuffer srcByteBuffer, SimpleFixField targetField) {
         tempBuffer.setLength(0);
         boolean equalSignFound = false;
         int tagId = 0;
         tempFixField.clear();
-        int position = srcByteBuffer.position();
+        int pos_before_message = srcByteBuffer.position();
         while (srcByteBuffer.hasRemaining()) {
-            char currChar = srcByteBuffer.getChar();
+            char currChar = (char) srcByteBuffer.get();
             switch (currChar) {
                 case '=': {
                     tagId = Integer.valueOf(tempBuffer.toString());
@@ -40,18 +34,38 @@ public class SimpleFixMessageParser {
                 }
                 break;
                 case SimpleFixMessageValue.ENTRY_SEPARATOR: {
-                    updateValue(tagId, tempBuffer);
-                    return tempFixField;
+                    targetField.setValue(tagId, tempBuffer);
+                    return;
                 }
                 default:
                     tempBuffer.append(currChar);
             }
 
         }
-        return null;
+        // could not be fully read, start again next time.
+        srcByteBuffer.position(pos_before_message);
     }
 
-    private void updateValue(int tagId, StringBuffer tempBuffer) {
-        tempFixField.setValue(tagId, tempBuffer);
+
+    public ParseResult parseNextMessage(ByteBuffer srcByteBuffer, SimpleFixMessage targetMessage) {
+        while (srcByteBuffer.hasRemaining()) {
+            parseNextFixField(srcByteBuffer, tempFixField);
+            targetMessage.addValue(tempFixField);
+            if (isCheckSum(tempFixField)) {
+                return ParseResult.MSG_COMPLETE;
+            }
+        }
+        return ParseResult.MSG_INCOMPLETE;
+    }
+
+    private boolean isCheckSum(SimpleFixField simpleFixField) {
+        return simpleFixField.tag() == CHECK_SUM_TAG;
+    }
+
+    public enum ParseResult {
+        MSG_COMPLETE,
+        MSG_INCOMPLETE,
+        INVALID_MESSAGE,
+        NO_DATA;
     }
 }
