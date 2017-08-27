@@ -39,6 +39,15 @@ public class SimpleSessionConfig {
         return targetSubID;
     }
 
+    public static String sessionId(CharSequence senderCompanyId, CharSequence senderSubId, CharSequence targetCompanyId, CharSequence targetSubId) {
+        return senderCompanyId + ":" + senderSubId + "->" + targetCompanyId + ":" + targetSubId;
+    }
+
+    @Override
+    public String toString() {
+        return sessionId(senderCompID, senderSubID, targetCompID, targetSubID);
+    }
+
     public static class SimpleSessionConfigBuilder {
         private String beginString;
         private String senderCompID;

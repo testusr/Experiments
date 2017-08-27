@@ -55,8 +55,8 @@ public class SimpleFixSession {
     }
 
     public boolean matches(CharSequence senderCompanyId, CharSequence senderSubId, CharSequence targetCompanyId, CharSequence targetSubId) {
-        return equals(targetCompanyId, sessionConfig.targetCompID()) && equals(targetSubId, sessionConfig.senderSubID())
-                && equals(senderCompanyId, sessionConfig.targetCompID()) && equals(senderSubId, sessionConfig.targetSubID());
+        return equals(targetCompanyId, sessionConfig.targetCompID()) && equals(senderSubId, sessionConfig.senderSubID())
+                && equals(senderCompanyId, sessionConfig.senderCompID()) && equals(senderSubId, sessionConfig.senderSubID());
     }
 
     private boolean equals(CharSequence charSequence, String string) {
@@ -68,6 +68,11 @@ public class SimpleFixSession {
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return SimpleSessionConfig.sessionId(senderCompId(), senderSubId(), targetCompId(), targetSubId());
     }
 
     public int id() {
@@ -94,7 +99,7 @@ public class SimpleFixSession {
         return sessionConfig.senderSubID();
     }
 
-    public String senderCompIp() {
+    public String senderCompId() {
         return sessionConfig.senderCompID();
     }
 }

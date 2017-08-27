@@ -18,10 +18,10 @@ public class StartFixServer {
 
         SimpleSessionConfig clientSessionConfig = SimpleSessionConfig.builder()
                 .beginString("FIX.4.4")
-                .senderCompID("Server.CompId")
-                .senderSubID("Server.SubId")
-                .targetCompID("Client.CompID")
-                .targetSubID("ClientSubId")
+                .targetCompID("Server.CompID")
+                .targetSubID("Server.SubId")
+                .senderCompID("Client.CompID")
+                .senderSubID("ClientSubId")
                 .build();
 
         SimpleFixSession clientSession = simpleFixServer.setupSession(clientSessionConfig);

@@ -1,4 +1,4 @@
-package de.smeo.tnode.fix;
+package smeo.experiments.quickfixj;
 
 import quickfix.*;
 import quickfix.field.*;

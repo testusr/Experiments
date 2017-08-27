@@ -32,6 +32,7 @@ public class SimpleFixServer {
     }
 
     public SimpleFixSession setupSession(SimpleSessionConfig sessionConfig) {
+        System.out.println("setup session: " + sessionConfig);
         SimpleFixSession newSession = new SimpleFixSession(sessionConfig);
         fixSessions.add(newSession);
         return newSession;
@@ -134,7 +135,7 @@ public class SimpleFixServer {
                 fixMessage.targetCompanyId(),
                 fixMessage.targetSubId());
 
-        final String sessionID = sessionId(
+        final String sessionID = SimpleSessionConfig.sessionId(
                 fixMessage.senderCompanyID(),
                 fixMessage.senderSubID(),
                 fixMessage.targetCompanyId(),
@@ -148,10 +149,6 @@ public class SimpleFixServer {
         }
 
 
-    }
-
-    private String sessionId(CharSequence senderCompanyId, CharSequence senderSubId, CharSequence targetCompanyId, CharSequence targetSubId) {
-        return senderCompanyId + ":" + senderSubId + "->" + targetCompanyId + ":" + targetSubId;
     }
 
     private SimpleFixSession findSession(CharSequence senderCompanyId, CharSequence senderSubId, CharSequence targetCompanyId, CharSequence targetSubId) {
