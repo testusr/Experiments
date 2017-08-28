@@ -4,17 +4,17 @@ package smeo.experiments.simplefix.model;
  * Created by smeo on 20.08.17.
  */
 public interface SimpleFixMessageValue {
-    char ENTRY_SEPARATOR = 1;
+	byte ENTRY_SEPARATOR = 0x01;
 
-    void clear();
+	void clear();
 
-    int tag();
+	int tag();
 
-    int length();
+	int length();
 
-    boolean hasValue();
+	boolean hasValue();
 
-    CharSequence stringValue();
+	CharSequence stringValue();
 
-    CharSequence pureStringValue();
+	CharSequence pureStringValue();
 }

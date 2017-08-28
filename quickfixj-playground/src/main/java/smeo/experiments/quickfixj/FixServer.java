@@ -90,8 +90,8 @@ public class FixServer extends MessageCracker implements Application {
                     executorSettings, fileLogFactory, messageFactory);
             socketAcceptor.start();
 
-            SessionID sessionId = (SessionID) socketAcceptor.getSessions().get(0);
-            application.onLogon(sessionId);
+//            SessionID sessionId = (SessionID) socketAcceptor.getSessions().get(0);
+//            application.onLogon(sessionId);
         } catch (Exception e) {
             e.printStackTrace();
         }

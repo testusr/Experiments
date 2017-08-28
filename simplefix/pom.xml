@@ -1,51 +1,41 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>smeo-experiments</artifactId>
-        <groupId>smeo.experiments</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>smeo-experiments</artifactId>
     <groupId>smeo.experiments</groupId>
-    <artifactId>simplefix</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>simplefix</name>
-    <url>http://maven.apache.org</url>
-    <repositories>
-        <repository>
-            <id>maven-central</id>
-            <name>central repository</name>
-            <url>http://central.maven.org/maven2/</url>
-        </repository>
-    </repositories>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
 
-    <build>
-        <sourceDirectory>/src/main/java</sourceDirectory>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.quickfixj</groupId>
-            <artifactId>quickfixj-all</artifactId>
-            <version>1.6.2</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
+  <artifactId>simplefix</artifactId>
+  <packaging>jar</packaging>
 
-    </dependencies>
+  <name>simplefix</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
