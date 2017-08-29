@@ -29,7 +29,16 @@ public class StartFixServer {
 
 		SimpleFixMessage fixMessage = new SimpleFixMessage();
 
-		for (int i = 0; i < 100000000; i++) {
+		while (!clientSession.isConnected()) {
+			System.out.println("waiting for session to connect");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("start sending snapshots");
+		for (int i = 0; i < 3; i++) {
 			if (clientSession.isConnected()) {
 				fixMessage.refurbish();
 				fixMessage.beginString("FIX4.2");
@@ -38,6 +47,7 @@ public class StartFixServer {
 				fixMessage.addTag(FixTags.MDReqId.tag, "EUR/GBP");
 				fixMessage.addTag(FixTags.NoMDEntries.tag, 2);
 				// MDEntry #1
+				fixMessage.addTag(FixTags.MDEntryID.tag, "6259");
 				fixMessage.addTag(FixTags.MDEntryType.tag, MDEntry_Type_BID);
 				fixMessage.addTag(FixTags.MDEntryPx.tag, 0.90958f);
 				fixMessage.addTag(FixTags.MDEntrySize.tag, 1000000);

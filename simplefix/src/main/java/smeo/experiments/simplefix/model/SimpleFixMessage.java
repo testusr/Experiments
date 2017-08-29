@@ -184,13 +184,11 @@ public class SimpleFixMessage {
 		write(targetCompanyId, byteBuffer, true);
 		write(targetSubId, byteBuffer, true);
 
-		SimpleFixField checkSum = new SimpleFixField();
-
 		for (int i = 0; i < messageValues.size(); i++) {
 			write(messageValues.get(i), byteBuffer, true);
 		}
 		checkSum.setValue(FixTags.CheckSum.tag, calculateCheckSum(startBody, byteBuffer));
-		write(checkSum, byteBuffer, false);
+		write(checkSum, byteBuffer, true);
 
 	}
 
@@ -209,13 +207,11 @@ public class SimpleFixMessage {
 		totalLength += senderSubID.length();
 		totalLength += targetCompanyId.length();
 		totalLength += targetSubId.length();
-		totalLength += 5;
 
 		for (int i = 0; i < messageValues.size(); i++) {
 			final SimpleFixMessageValue simpleFixMessageValue = messageValues.get(i);
 			totalLength += simpleFixMessageValue.length();
 		}
-		totalLength += messageValues.size();
 		return totalLength;
 	}
 
