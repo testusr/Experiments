@@ -82,6 +82,14 @@ public class SimpleFixServer {
 		}
 	}
 
+	public void readMessages() {
+		for (int i = 0; i < fixSessions.size(); i++) {
+			fixSessions.get(i)
+					.readMessage();
+		}
+	}
+
+
 	private void handleLoginRequest(SocketChannel socketChannel) {
 		try {
 			System.out.println("handle login express");
@@ -136,7 +144,11 @@ public class SimpleFixServer {
 
 		System.out.println("logon request:\n" + SimpleFixMessage.asString(fixMessage));
 		if (session != null) {
-			session.linkToSocketChannel(socketChannel);
+			try {
+				session.linkToSocketChannel(socketChannel);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			session.sendSessionMessage(fixMessage);
 			session.markAsConnected();
 			System.out.println("Session connected '" + sessionID + "'");

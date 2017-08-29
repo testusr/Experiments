@@ -29,47 +29,50 @@ public class SimpleFixMessage {
 	SimpleFixField targetSubId = new SimpleFixField();
 	//10
 	SimpleFixField checkSum = new SimpleFixField();
+	//36
+	SimpleFixField msgSeqNum = new SimpleFixField();
+
 
 	public void addValue(SimpleFixField value) {
 		if (value.hasValue()) {
-			switch (value.tag()) {
-				case 8: {
-					beginString.internalize(value);
-					break;
-				}
-				case 9: {
-					bodyLength.internalize(value);
-					break;
-				}
-				case 35: {
-					messageType.internalize(value);
-					break;
-				}
-				case 49: {
-					senderCompanyID.internalize(value);
-					break;
-				}
-				case 50: {
-					senderSubID.internalize(value);
-					break;
-				}
-				case 56: {
-					targetCompanyId.internalize(value);
-					break;
-				}
-				case 57: {
-					targetSubId.internalize(value);
-					break;
-				}
-				case 10: {
-					checkSum.internalize(value);
-					break;
-				}
-				default: {
-					final SimpleFixField simpleFixField = nextFixFieldFromPool();
-					simpleFixField.internalize(value);
-					messageValues.add(simpleFixField);
-				}
+			SimpleFixField fixField = getFieldToAdd(value.tag());
+			fixField.internalize(value);
+		}
+	}
+
+	public SimpleFixField getFieldToAdd(int tag) {
+		switch (tag) {
+			case 8: {
+				return beginString;
+			}
+			case 9: {
+				return bodyLength;
+			}
+			case 35: {
+				return messageType;
+			}
+			case 34: {
+				return msgSeqNum;
+			}
+			case 49: {
+				return senderCompanyID;
+			}
+			case 50: {
+				return senderSubID;
+			}
+			case 56: {
+				return targetCompanyId;
+			}
+			case 57: {
+				return targetSubId;
+			}
+			case 10: {
+				return checkSum;
+			}
+			default: {
+				SimpleFixField nextFieldFromPool = nextFixFieldFromPool();
+				messageValues.add(nextFieldFromPool);
+				return nextFieldFromPool;
 			}
 		}
 	}
@@ -134,30 +137,25 @@ public class SimpleFixMessage {
 	}
 
 	public SimpleFixMessage addTag(int tag, String value) {
-		final SimpleFixField simpleFixField = nextFixFieldFromPool();
+		final SimpleFixField simpleFixField = getFieldToAdd(tag);
 		simpleFixField.setValue(tag, value);
-		messageValues.add(simpleFixField);
 		return this;
 	}
 
 	public SimpleFixMessage addTag(int tag, int value) {
-		final SimpleFixField simpleFixField = nextFixFieldFromPool();
+		final SimpleFixField simpleFixField = getFieldToAdd(tag);
 		simpleFixField.setValue(tag, value);
-		messageValues.add(simpleFixField);
 		return this;
 	}
 
 	public SimpleFixMessage addTag(int tag, char value) {
-		final SimpleFixField simpleFixField = nextFixFieldFromPool();
-		simpleFixField.setValue(tag, value);
-		messageValues.add(simpleFixField);
+		final SimpleFixField simpleFixField = getFieldToAdd(tag);
 		return this;
 	}
 
 	public SimpleFixMessage addTag(int tag, double value) {
-		final SimpleFixField simpleFixField = nextFixFieldFromPool();
+		final SimpleFixField simpleFixField = getFieldToAdd(tag);
 		simpleFixField.setValue(tag, value);
-		messageValues.add(simpleFixField);
 		return this;
 	}
 
@@ -183,16 +181,17 @@ public class SimpleFixMessage {
 		write(senderSubID, byteBuffer, true);
 		write(targetCompanyId, byteBuffer, true);
 		write(targetSubId, byteBuffer, true);
+		write(msgSeqNum, byteBuffer, true);
 
 		for (int i = 0; i < messageValues.size(); i++) {
 			write(messageValues.get(i), byteBuffer, true);
 		}
-		checkSum.setValue(FixTags.CheckSum.tag, calculateCheckSum(startBody, byteBuffer));
+		checkSum.setValue(FixTags.CheckSum.tag, calculateCheckSum(byteBuffer));
 		write(checkSum, byteBuffer, true);
 
 	}
 
-	private int calculateCheckSum(int startBody, ByteBuffer byteBuffer) {
+	private int calculateCheckSum(ByteBuffer byteBuffer) {
 		long checksum = 0;
 		for (int i = 0; i <= byteBuffer.position(); i++) {
 			checksum += (char) byteBuffer.get(i);
@@ -207,6 +206,7 @@ public class SimpleFixMessage {
 		totalLength += senderSubID.length();
 		totalLength += targetCompanyId.length();
 		totalLength += targetSubId.length();
+		totalLength += msgSeqNum.length();
 
 		for (int i = 0; i < messageValues.size(); i++) {
 			final SimpleFixMessageValue simpleFixMessageValue = messageValues.get(i);
@@ -233,6 +233,7 @@ public class SimpleFixMessage {
 		senderSubID.clear();
 		targetCompanyId.clear();
 		targetSubId.clear();
+		msgSeqNum.clear();
 		checkSum.clear();
 		for (int i = 0; i < this.messageValues.size(); i++) {
 			messageValues.get(i)
@@ -254,4 +255,7 @@ public class SimpleFixMessage {
 	}
 
 
+	public void msgSeqNum(int i) {
+		this.msgSeqNum.setValue(34, i);
+	}
 }

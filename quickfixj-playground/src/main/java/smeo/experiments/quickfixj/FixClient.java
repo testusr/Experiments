@@ -105,8 +105,9 @@ public class FixClient extends MessageCracker implements Application {
 			Application initiatorApplication = new FixClient();
 			FileStoreFactory fileStoreFactory = new FileStoreFactory(initiatorSettings);
 			FileLogFactory fileLogFactory = new FileLogFactory(initiatorSettings);
+			SLF4JLogFactory logFactory = new SLF4JLogFactory(initiatorSettings);
 			MessageFactory messageFactory = new DefaultMessageFactory();
-			socketInitiator = new SocketInitiator(initiatorApplication, fileStoreFactory, initiatorSettings, fileLogFactory, messageFactory);
+			socketInitiator = new SocketInitiator(initiatorApplication, fileStoreFactory, initiatorSettings, logFactory, messageFactory);
 			socketInitiator.start();
 			SessionID sessionId = socketInitiator.getSessions()
 					.get(0);

@@ -1,6 +1,7 @@
 package smeo.experiments.simplefix.server;
 
 import smeo.experiments.simplefix.model.SimpleFixMessage;
+import smeo.experiments.simplefix.model.SimpleFixMessageParser;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -9,10 +10,14 @@ import java.nio.channels.SocketChannel;
 public class SimpleFixSession {
 	SimpleSessionConfig sessionConfig;
 	SessionContext sessionContext;
-	private ByteBuffer byteBuffer = ByteBuffer.allocate(2096);
+	private ByteBuffer writeBuffer = ByteBuffer.allocate(2096);
+	private ByteBuffer readBuffer = ByteBuffer.allocate(2096);
 	private SocketChannel socketChannel;
 	private String targetIpAdress = "";
 	private boolean isConnected = false;
+
+	SimpleFixMessageParser incomingMessageParser = new SimpleFixMessageParser();
+	SimpleFixMessage incomingFixMessage = new SimpleFixMessage();
 
 	public SimpleFixSession(SimpleSessionConfig sessionConfig) {
 		this.sessionConfig = sessionConfig;
@@ -28,7 +33,7 @@ public class SimpleFixSession {
 		return this.isConnected && socketChannel != null && socketChannel.isConnected();
 	}
 
-	public void linkToSocketChannel(SocketChannel socketChannel) {
+	public void linkToSocketChannel(SocketChannel socketChannel) throws IOException {
 		if (this.socketChannel != null) {
 			try {
 				this.socketChannel.close();
@@ -38,6 +43,8 @@ public class SimpleFixSession {
 		}
 		this.isConnected = false;
 		this.socketChannel = socketChannel;
+		this.socketChannel.configureBlocking(false);
+		this.sessionContext.seqNo = 1;
 	}
 
 	public void markAsConnected() {
@@ -48,6 +55,7 @@ public class SimpleFixSession {
 		if (isConnected()) {
 			sendSessionMessage(fixMessage);
 		}
+		readMessage();
 	}
 
 	public void sendSessionMessage(SimpleFixMessage fixMessage) {
@@ -63,20 +71,43 @@ public class SimpleFixSession {
 		fixMessage.targetCompanyId(sessionConfig.senderCompID);
 		fixMessage.targetSubId(sessionConfig.senderSubID);
 
-		//fixMessage.senderSeqNo(sessionContext.nextSeqId());
+		fixMessage.msgSeqNum(sessionContext.nextSeqId());
 		System.out.println("'send:\n'" + SimpleFixMessage.asString(fixMessage));
-		byteBuffer.clear();
-		fixMessage.writeToByteBuffer(byteBuffer);
+		writeBuffer.clear();
+		fixMessage.writeToByteBuffer(writeBuffer);
 		try {
-			byteBuffer.flip();
-			while (byteBuffer.hasRemaining()) {
-				socketChannel.write(byteBuffer);
+			writeBuffer.flip();
+			while (writeBuffer.hasRemaining()) {
+				socketChannel.write(writeBuffer);
 			}
-			byteBuffer.compact();
+			writeBuffer.compact();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
+	}
+
+	public void readMessage() {
+		if (isConnected) {
+			boolean dataRead = false;
+			try {
+				while (socketChannel.read(readBuffer) > 0) {
+					dataRead = true;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (dataRead) {
+				if (incomingMessageParser.parseNextMessage(readBuffer, incomingFixMessage) == SimpleFixMessageParser.ParseResult.MSG_COMPLETE) {
+					readBuffer.compact();
+					processIncomingMessage(sessionConfig, incomingFixMessage);
+				}
+			}
+		}
+	}
+
+	private void processIncomingMessage(SimpleSessionConfig sessionConfig, SimpleFixMessage incomingFixMessage) {
+		System.out.println("incoming message:  '" + sessionConfig.toString() + "': " + SimpleFixMessage.asString(incomingFixMessage));
 	}
 
 

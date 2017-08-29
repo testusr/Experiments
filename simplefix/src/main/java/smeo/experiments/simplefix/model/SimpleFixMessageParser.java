@@ -58,6 +58,14 @@ public class SimpleFixMessageParser {
 		return ParseResult.MSG_INCOMPLETE;
 	}
 
+	public static void parseFromFixString(String fixMessage, String separator, SimpleFixMessage targetMessage) {
+		String[] splitElements = fixMessage.split(separator);
+		for (int i = 0; i < splitElements.length; i++) {
+			String keyValueSplit[] = splitElements[i].split("=");
+			targetMessage.addTag(Integer.valueOf(keyValueSplit[0]), keyValueSplit[1]);
+		}
+	}
+
 	private boolean isCheckSum(SimpleFixField simpleFixField) {
 		return simpleFixField.tag() == CHECK_SUM_TAG;
 	}
