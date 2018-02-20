@@ -10,7 +10,7 @@ public enum FixMessageType {
         this.msgType = msgType;
     }
 
-    CharSequence msgType() {
+    String msgType() {
         return msgType;
     }
 

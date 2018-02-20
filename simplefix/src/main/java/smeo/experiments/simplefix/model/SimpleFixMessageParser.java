@@ -9,18 +9,17 @@ public class SimpleFixMessageParser {
 	private static final int CHECK_SUM_TAG = 10;
 	private static final int BEGIN_STRING_TAG = 8;
 
-	SimpleFixField tempFixField = new SimpleFixField();
+	FixField tempFixField = new FixField();
 	StringBuffer tempBuffer = new StringBuffer();
 
 
-	public SimpleFixField parseNextFixField(ByteBuffer srcByteBuffer) {
+	public FixField parseNextFixField(ByteBuffer srcByteBuffer) {
 		parseNextFixField(srcByteBuffer, tempFixField);
 		return tempFixField;
 	}
 
-	public void parseNextFixField(ByteBuffer srcByteBuffer, SimpleFixField targetField) {
+	public void parseNextFixField(ByteBuffer srcByteBuffer, FixField targetField) {
 		tempBuffer.setLength(0);
-		boolean equalSignFound = false;
 		int tagId = 0;
 		tempFixField.clear();
 		int pos_before_message = srcByteBuffer.position();
@@ -29,11 +28,10 @@ public class SimpleFixMessageParser {
 			switch (currChar) {
 				case '=': {
 					tagId = Integer.valueOf(tempBuffer.toString());
-					equalSignFound = true;
 					tempBuffer.setLength(0);
 				}
 				break;
-				case SimpleFixMessageValue.ENTRY_SEPARATOR: {
+				case FixMessageValue.ENTRY_SEPARATOR: {
 					targetField.setValue(tagId, tempBuffer);
 					return;
 				}
@@ -47,7 +45,7 @@ public class SimpleFixMessageParser {
 	}
 
 
-	public ParseResult parseNextMessage(ByteBuffer srcByteBuffer, SimpleFixMessage targetMessage) {
+	public ParseResult parseNextMessage(ByteBuffer srcByteBuffer, FixMessage targetMessage) {
 		while (srcByteBuffer.hasRemaining()) {
 			parseNextFixField(srcByteBuffer, tempFixField);
 			targetMessage.addValue(tempFixField);
@@ -58,7 +56,7 @@ public class SimpleFixMessageParser {
 		return ParseResult.MSG_INCOMPLETE;
 	}
 
-	public static void parseFromFixString(String fixMessage, String separator, SimpleFixMessage targetMessage) {
+	public static void parseFromFixString(String fixMessage, String separator, FixMessage targetMessage) {
 		String[] splitElements = fixMessage.split(separator);
 		for (int i = 0; i < splitElements.length; i++) {
 			String keyValueSplit[] = splitElements[i].split("=");
@@ -66,7 +64,7 @@ public class SimpleFixMessageParser {
 		}
 	}
 
-	private boolean isCheckSum(SimpleFixField simpleFixField) {
+	private boolean isCheckSum(FixField simpleFixField) {
 		return simpleFixField.tag() == CHECK_SUM_TAG;
 	}
 
