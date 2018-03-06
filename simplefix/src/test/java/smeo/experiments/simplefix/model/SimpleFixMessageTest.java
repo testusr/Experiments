@@ -68,7 +68,7 @@ public class SimpleFixMessageTest {
         simpleFixMessage.writeToByteBuffer(byteBuffer);
 
         //Expected CheckSum=153
-        final String checkSumAsString = simpleFixMessage.checkSum.valueAsString();
+        final String checkSumAsString = (String) simpleFixMessage.checkSum.pureStringValue();
         System.out.println(originalFixMessage);
         System.out.println("refCheckSum: " + calcReferenceCheckSum(originalFixMessage));
         System.out.println("\n" + FixMessage.asString(simpleFixMessage));

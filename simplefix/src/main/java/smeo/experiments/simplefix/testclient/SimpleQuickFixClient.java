@@ -13,7 +13,7 @@ import java.util.Scanner;
 /**
  * Created by smeo on 22.02.17.
  */
-public class SimpleFixClient extends MessageCracker implements Application {
+public class SimpleQuickFixClient extends MessageCracker implements Application {
     int toApp = 0;
 
     /**
@@ -102,9 +102,9 @@ public class SimpleFixClient extends MessageCracker implements Application {
     public static void main(String[] args) {
         SocketInitiator socketInitiator = null;
         try {
-            InputStream is = SimpleFixClient.class.getResourceAsStream("/client.cfg");
+            InputStream is = SimpleQuickFixClient.class.getResourceAsStream("/client.cfg");
             SessionSettings initiatorSettings = new SessionSettings(is);
-            Application initiatorApplication = new SimpleFixClient();
+            Application initiatorApplication = new SimpleQuickFixClient();
             FileStoreFactory fileStoreFactory = new FileStoreFactory(initiatorSettings);
             FileLogFactory fileLogFactory = new FileLogFactory(initiatorSettings);
             SLF4JLogFactory logFactory = new SLF4JLogFactory(initiatorSettings);

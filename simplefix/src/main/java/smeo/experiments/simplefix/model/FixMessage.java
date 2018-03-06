@@ -1,7 +1,6 @@
 package smeo.experiments.simplefix.model;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,11 +187,29 @@ public class FixMessage {
         for (int i = 0; i < messageValues.size(); i++) {
             write(messageValues.get(i), byteBuffer, true);
         }
-        System.out.println("bb: " + new String(byteBuffer.array(), Charset.forName("UTF-8")));
-        checkSum.setValue(FixTags.CheckSum.tag, calculateCheckSum(startPosition, byteBuffer));
-        write(checkSum, byteBuffer, true);
-
+        //checkSum.setValue(FixTags.CheckSum.tag, );
+        writeChecksum(checkSum, byteBuffer, calculateCheckSum(startPosition, byteBuffer), true);
+        // System.out.println("[MESSAGE] ByteBuffer: " + new String(byteBuffer.array(), Charset.forName("UTF-8")));
     }
+
+    private void writeChecksum(FixField checkSum, ByteBuffer byteBuffer, int checksum, boolean b) {
+        byteBuffer.put((byte) '1');
+        byteBuffer.put((byte) '0');
+        byteBuffer.put((byte) '=');
+        if (checksum < 100) {
+            byteBuffer.put((byte) '0');
+        }
+        if (checksum < 10) {
+            byteBuffer.put((byte) '0');
+        }
+        String intValue = String.valueOf(checksum);
+        for (int i = 0; i < intValue.length(); i++) {
+            byteBuffer.put((byte) intValue.charAt(i));
+        }
+
+        byteBuffer.put(TAG_SEPARATOR);
+    }
+
 
     private int calculateCheckSum(int startPosition, ByteBuffer byteBuffer) {
         StringBuffer stringBuffer = new StringBuffer();
@@ -203,7 +220,7 @@ public class FixMessage {
         }
         final int checksum = (int) sum % 256;
 
-        System.out.println("checkSumOn: '" + stringBuffer.toString() + "' \n cs: '" + checksum + "'");
+        //System.out.println("[MESSAGE] checkSumOn: '" + stringBuffer.toString() + "' \n cs: '" + checksum + "'");
         return checksum;
     }
 

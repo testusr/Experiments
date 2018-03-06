@@ -1,7 +1,7 @@
 package smeo.experiments.simplefix.server;
 
-import smeo.experiments.simplefix.model.FixMessageType;
 import smeo.experiments.simplefix.model.FixMessage;
+import smeo.experiments.simplefix.model.FixMessageType;
 import smeo.experiments.simplefix.model.SimpleFixMessageParser;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class SimpleFixServer {
     }
 
     public SimpleFixSession initFixClientSession(SimpleSessionConfig sessionConfig) {
-        System.out.println("setup session: " + sessionConfig);
+        System.out.println("[SERVER] setup session: " + sessionConfig);
         SimpleFixSession newSession = new SimpleFixSession(sessionConfig);
         fixSessions.add(newSession);
         return newSession;
@@ -57,10 +57,11 @@ public class SimpleFixServer {
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.socket()
                     .bind(new InetSocketAddress(port));
-            System.out.println("start listening on port: " + port);
+            System.out.println("[SERVER] start listening on port: " + port);
 
             while (isListening.get()) {
                 SocketChannel socketChannel = serverSocketChannel.accept();
+                System.out.println("[SERVER] server accepted incoming socket connection");
                 handleLoginRequest(socketChannel);
             }
         } catch (IOException e) {
@@ -78,13 +79,14 @@ public class SimpleFixServer {
 
     private void handleLoginRequest(SocketChannel socketChannel) {
         try {
-            System.out.println("handle login request");
             final int read = socketChannel.read(buf);
             buf.flip();
             try {
                 switch (fixMessageParser.parseNextMessage(buf, incomingMessage)) {
                     case MSG_COMPLETE:
+                        System.out.println("[SERVER] incoming server message read: " + FixMessage.asString(incomingMessage));
                         handleFixMessage(incomingMessage, socketChannel);
+                        incomingMessage.refurbish();
                         break;
                     default:
                         break;
@@ -92,6 +94,8 @@ public class SimpleFixServer {
             } catch (RuntimeException e) {
                 e.printStackTrace();
             }
+            buf.flip();
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,7 +108,7 @@ public class SimpleFixServer {
                 handleLogonMessage(fixMessage, socketChannel);
                 break;
             default:
-                System.out.println("unknown message type '" + fixMessage.messageType() + "' message ignored");
+                System.out.println("[SERVER] unknown message type '" + fixMessage.messageType() + "' message ignored");
                 break;
 
         }
@@ -115,7 +119,7 @@ public class SimpleFixServer {
 
         final String sessionID = SimpleSessionConfig.sessionId(fixMessage.senderCompanyID(), fixMessage.senderSubID(), fixMessage.targetCompanyId(), fixMessage.targetSubId());
 
-        System.out.println("logon request:\n" + FixMessage.asString(fixMessage));
+        System.out.println("[SERVER] logon request:\n" + FixMessage.asString(fixMessage));
         if (session != null) {
             try {
                 session.linkToSocketChannel(socketChannel);
@@ -124,9 +128,9 @@ public class SimpleFixServer {
             }
             session.sendSessionMessage(fixMessage);
             session.markAsConnected();
-            System.out.println("Session connected '" + sessionID + "'");
+            System.out.println("[SERVER] Session connected '" + sessionID + "'");
         } else {
-            System.out.println("Attempt to logon to unknown session '" + sessionID + "' ignored");
+            System.out.println("[SERVER] Attempt to logon to unknown session '" + sessionID + "' ignored");
         }
 
 

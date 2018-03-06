@@ -6,19 +6,19 @@ import smeo.experiments.simplefix.model.SimpleFixMessageParser;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 
 public class SimpleFixSession {
     SimpleSessionConfig sessionConfig;
     SessionContext sessionContext;
     private boolean isConnected = false;
 
-    private ByteBuffer writeBuffer = ByteBuffer.allocate(2096);
+    private ByteBuffer writeBuffer = ByteBuffer.allocateDirect(2096);
     private SocketChannel socketChannel;
 
-    private ByteBuffer readBuffer = ByteBuffer.allocate(2096);
+    private ByteBuffer readBuffer = ByteBuffer.allocateDirect(2096);
     private SimpleFixMessageParser incomingMessageParser = new SimpleFixMessageParser();
     private FixMessage incomingFixMessage = new FixMessage();
+    private FixMessage controlMessagePreallocated = new FixMessage();
 
     public SimpleFixSession(SimpleSessionConfig sessionConfig) {
         this.sessionConfig = sessionConfig;
@@ -29,6 +29,13 @@ public class SimpleFixSession {
         this.sessionContext = new SessionContext();
     }
 
+
+    private void resetSequence() {
+        controlMessagePreallocated.refurbish();
+        controlMessagePreallocated.addTag(35, 4); // SequenceReset
+        controlMessagePreallocated.addTag(36, sessionContext.nextSeqId()); // NewSeqNo
+        sendMessage(controlMessagePreallocated);
+    }
 
     public boolean isConnected() {
         return this.isConnected && socketChannel != null && socketChannel.isConnected();
@@ -70,9 +77,11 @@ public class SimpleFixSession {
 
         fixMessage.msgSeqNum(sessionContext.nextSeqId());
         writeBuffer.clear();
+        //  System.out.println("[SESSION '" + sessionConfig.toString() + "'] send message");//:  '" + FixMessage.asString(fixMessage));
         fixMessage.writeToByteBuffer(writeBuffer);
+        //  System.out.println("[SESSION '" + sessionConfig.toString() + "'] --> from Buffer: " + new String(writeBuffer.array(), Charset.forName("UTF-8")));
 
-        System.out.println("'send:\n'" + new String(writeBuffer.array(), Charset.forName("UTF-8")));
+
         try {
             writeBuffer.flip();
             while (writeBuffer.hasRemaining()) {
@@ -80,6 +89,8 @@ public class SimpleFixSession {
             }
             writeBuffer.compact();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -96,16 +107,18 @@ public class SimpleFixSession {
                 e.printStackTrace();
             }
             if (dataRead) {
+                readBuffer.flip();
                 if (incomingMessageParser.parseNextMessage(readBuffer, incomingFixMessage) == SimpleFixMessageParser.ParseResult.MSG_COMPLETE) {
                     readBuffer.compact();
                     processIncomingMessage(sessionConfig, incomingFixMessage);
                 }
+                readBuffer.flip();
             }
         }
     }
 
     private void processIncomingMessage(SimpleSessionConfig sessionConfig, FixMessage incomingFixMessage) {
-        System.out.println("incoming message:  '" + sessionConfig.toString() + "': " + FixMessage.asString(incomingFixMessage));
+        System.out.println("[SESSION '" + sessionConfig.toString() + "'] incoming message: " + FixMessage.asString(incomingFixMessage));
     }
 
 

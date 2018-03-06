@@ -4,6 +4,7 @@ package smeo.experiments.simplefix.model;
  * Reusable Fix Value Container.
  */
 public class FixField implements FixMessageValue {
+    public static final int NO_TAG = 0;
     private FixValueType type;
     private int tag;
     private double doubleValue;
@@ -14,8 +15,10 @@ public class FixField implements FixMessageValue {
     private StringBuffer fieldAsStringCache = new StringBuffer();
 
     public void clear() {
+        tag = NO_TAG;
         type = null;
         fieldAsStringCache.setLength(0);
+        stringValue.setLength(0);
     }
 
     public int tag() {
@@ -23,7 +26,11 @@ public class FixField implements FixMessageValue {
     }
 
     public String toString() {
-        return tagAndValue().toString();
+        return String.valueOf(tagAndValue());
+    }
+
+    public boolean isSeparator() {
+        return (tag == NO_TAG);
     }
 
     public boolean hasValue() {
@@ -78,19 +85,21 @@ public class FixField implements FixMessageValue {
         if (fieldAsStringCache.length() == 0) {
             fieldAsStringCache.append(tag)
                     .append('=');
-            switch (type) {
-                case INTEGER:
-                    fieldAsStringCache.append(intValue);
-                    break;
-                case CHAR:
-                    fieldAsStringCache.append(charValue);
-                    break;
-                case DOUBLE:
-                    fieldAsStringCache.append(doubleValue);
-                    break;
-                case STRING:
-                    fieldAsStringCache.append(stringValue);
-                    break;
+            if (type != null) {
+                switch (type) {
+                    case INTEGER:
+                        fieldAsStringCache.append(intValue);
+                        break;
+                    case CHAR:
+                        fieldAsStringCache.append(charValue);
+                        break;
+                    case DOUBLE:
+                        fieldAsStringCache.append(doubleValue);
+                        break;
+                    case STRING:
+                        fieldAsStringCache.append(stringValue);
+                        break;
+                }
             }
         }
         return fieldAsStringCache;
@@ -129,5 +138,9 @@ public class FixField implements FixMessageValue {
                 this.doubleValue = value.doubleValue;
                 break;
         }
+    }
+
+    public boolean isMessageStart() {
+        return tag == 8;
     }
 }
