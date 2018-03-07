@@ -84,6 +84,7 @@ public class SimpleFixServer {
             try {
                 switch (fixMessageParser.parseNextMessage(buf, incomingMessage)) {
                     case MSG_COMPLETE:
+                        buf.compact();
                         System.out.println("[SERVER] incoming server message read: " + FixMessage.asString(incomingMessage));
                         handleFixMessage(incomingMessage, socketChannel);
                         incomingMessage.refurbish();

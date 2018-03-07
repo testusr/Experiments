@@ -96,6 +96,8 @@ public class SimpleFixSession {
             }
             writeBuffer.clear();
         } catch (IOException e) {
+            System.out.println("[SESSION '" + sessionConfig.toString() + "'] caught IOException, disconnecting '" + e.getMessage() + "'");
+            this.isConnected = false;
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
