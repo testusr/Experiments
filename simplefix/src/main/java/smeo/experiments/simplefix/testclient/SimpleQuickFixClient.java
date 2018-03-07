@@ -2,9 +2,10 @@ package smeo.experiments.simplefix.testclient;
 
 import quickfix.*;
 import quickfix.field.*;
-import quickfix.fix42.ExecutionReport;
-import quickfix.fix42.MessageCracker;
-import quickfix.fix44.NewOrderSingle;
+import quickfix.fix50.ExecutionReport;
+import quickfix.fix50.MarketDataSnapshotFullRefresh;
+import quickfix.fix50.MessageCracker;
+import quickfix.fix50.NewOrderSingle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,6 +86,11 @@ public class SimpleQuickFixClient extends MessageCracker implements Application 
     }
 
     @Override
+    public void onMessage(MarketDataSnapshotFullRefresh message, SessionID sessionID) throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+        System.out.println("fullRefresh: " + message);
+    }
+
+    @Override
     public void onMessage(Message message, SessionID sessionID) throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
         System.out.println("onMessage: " + message);
         if (message instanceof ExecutionReport) {
@@ -98,6 +104,7 @@ public class SimpleQuickFixClient extends MessageCracker implements Application 
                     .getValue());
         }
     }
+
 
     public static void main(String[] args) {
         SocketInitiator socketInitiator = null;

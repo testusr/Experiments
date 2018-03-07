@@ -60,9 +60,9 @@ public class SimpleFixMessageParser {
     public ParseResult parseNextMessage(ByteBuffer srcByteBuffer, FixMessage targetMessage) {
         while (srcByteBuffer.hasRemaining()) {
             if (parseNextFixField(srcByteBuffer, tempFixField)) {
- /*               if (tempFixField.isMessageStart()){
+                if (tempFixField.isMessageStart()) {
                     targetMessage.refurbish();
-                }*/
+                }
                 if (!tempFixField.isSeparator()) {
                     targetMessage.addValue(tempFixField);
                     System.out.println("[SERVER] parseNextMessage - parsed field '" + tempFixField.toString() + "'");

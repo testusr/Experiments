@@ -3,6 +3,8 @@ package smeo.experiments.simplefix.server;
 import smeo.experiments.simplefix.model.FixMessage;
 import smeo.experiments.simplefix.model.SimpleFixMessageParser;
 
+import java.util.Scanner;
+
 /**
  * Created by truehl on 15.08.17.
  */
@@ -41,36 +43,44 @@ public class StartSimpleFixServer {
                 "\u00011070=1\u0001278=26928496/1/\u0001269=1\u0001270=1.25822\u0001271=1000000\u0001272=20180213\u0001273=00:00:00.279\u000164=20180306\u00011070=1\u0001278=26928496/20/\u0001269=1\u0001270=1.25832\u0001271=10000000\u0001272=20180213\u0001273=00:00:00.279\u000164=20180306\u00011070=1\u0001278=26928496/21/\u000110=073\u0001";
         SimpleFixMessageParser.parseFromFixString(originalFixMessage, "\u0001", fixMessage);
 
-        new Thread(new Runnable() {
+        final Thread readWriteThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 Thread.currentThread().setName("send client messages");
-                for (int i = 0; i < 50; i++) {
-                    if (clientSession.isConnected()) {
-                        clientSession.readMessage();
-                        if (clientSession.sendMessage(fixMessage)) {
-                        } else {
-                            System.out.println("[STARTER] not connected");
+                int i = 0;
+
+                while (true) {
+                    try {
+                        if (clientSession.isConnected()) {
+                            clientSession.readMessage();
+
+                            if (++i > 101) {
+                                i = 0;
+                                if (clientSession.sendMessage(fixMessage)) {
+                                } else {
+                                    System.out.println("[STARTER] not connected");
+                                }
+                            }
+                            try {
+                                Thread.sleep(5);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
-                        try {
-                            Thread.sleep(5);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
-            }
-        }).start();
+//                System.out.println("[STARTER] - done sending snapshots");
 
-        System.out.println("[STARTER] - done sending snapshots");
-        while (true) {
-            simpleFixServer.readMessages();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
-        }
+        });
+        readWriteThread.start();
+
+        System.out.println("Type to quit");
+        Scanner scanner = new Scanner(System.in);
+        scanner.next();
+        System.exit(0);
 
     }
 

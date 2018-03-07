@@ -1,5 +1,6 @@
 package smeo.experiments.simplefix.server;
 
+import smeo.experiments.simplefix.model.FixField;
 import smeo.experiments.simplefix.model.FixMessage;
 import smeo.experiments.simplefix.model.SimpleFixMessageParser;
 
@@ -31,10 +32,11 @@ public class SimpleFixSession {
 
 
     private void resetSequence() {
+        System.out.println("[SESSION '" + sessionConfig.toString() + " resetting sequence']");
         controlMessagePreallocated.refurbish();
         controlMessagePreallocated.addTag(35, 4); // SequenceReset
-        controlMessagePreallocated.addTag(36, sessionContext.nextSeqId()); // NewSeqNo
-        sendMessage(controlMessagePreallocated);
+        controlMessagePreallocated.addTag(36, sessionContext.seqNo + 1); // NewSeqNo
+        sendControlMessage(controlMessagePreallocated);
     }
 
     public boolean isConnected() {
@@ -59,12 +61,18 @@ public class SimpleFixSession {
         this.isConnected = true;
     }
 
+
     public boolean sendMessage(FixMessage fixMessage) {
         if (isConnected()) {
             sendSessionMessage(fixMessage);
             return true;
         }
         return false;
+    }
+
+    public void sendControlMessage(FixMessage fixMessage) {
+        sendMessage(fixMessage);
+        System.out.println("[SESSION '" + sessionConfig.toString() + "'] send message '" + FixMessage.asString(fixMessage) + "'");//:  '" + FixMessage.asString(fixMessage));
     }
 
     public void sendSessionMessage(FixMessage fixMessage) {
@@ -77,7 +85,6 @@ public class SimpleFixSession {
 
         fixMessage.msgSeqNum(sessionContext.nextSeqId());
         writeBuffer.clear();
-        //  System.out.println("[SESSION '" + sessionConfig.toString() + "'] send message");//:  '" + FixMessage.asString(fixMessage));
         fixMessage.writeToByteBuffer(writeBuffer);
         //  System.out.println("[SESSION '" + sessionConfig.toString() + "'] --> from Buffer: " + new String(writeBuffer.array(), Charset.forName("UTF-8")));
 
@@ -87,7 +94,7 @@ public class SimpleFixSession {
             while (writeBuffer.hasRemaining()) {
                 socketChannel.write(writeBuffer);
             }
-            writeBuffer.compact();
+            writeBuffer.clear();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -119,6 +126,24 @@ public class SimpleFixSession {
 
     private void processIncomingMessage(SimpleSessionConfig sessionConfig, FixMessage incomingFixMessage) {
         System.out.println("[SESSION '" + sessionConfig.toString() + "'] incoming message: " + FixMessage.asString(incomingFixMessage));
+        switch (incomingFixMessage.messageType().toString()) {
+            case "2": // resend message - we dont we reset
+                resetSequence();
+                break;
+            case "1": // test request - answer with heartbeat
+                processTestRequest(incomingFixMessage);
+                break;
+            default:
+        }
+    }
+
+    private void processTestRequest(FixMessage incomingFixMessage) {
+        controlMessagePreallocated.refurbish();
+        controlMessagePreallocated.addTag(35, 0); // heartbeat
+        final FixField preallocatedFieldForTag = incomingFixMessage.getPreallocatedFieldForTag(112);
+        final String receivedTestRequestId = preallocatedFieldForTag.valueAsString();
+        controlMessagePreallocated.addTag(112, receivedTestRequestId); // received test req id
+        sendControlMessage(controlMessagePreallocated);
     }
 
 
