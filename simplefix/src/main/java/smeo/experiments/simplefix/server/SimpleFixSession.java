@@ -1,7 +1,7 @@
 package smeo.experiments.simplefix.server;
 
-import smeo.experiments.simplefix.model.FixField;
 import smeo.experiments.simplefix.model.FixMessage;
+import smeo.experiments.simplefix.model.FixMessageValue;
 import smeo.experiments.simplefix.model.SimpleFixMessageParser;
 
 import java.io.IOException;
@@ -143,8 +143,8 @@ public class SimpleFixSession {
     private void processTestRequest(FixMessage incomingFixMessage) {
         controlMessagePreallocated.refurbish();
         controlMessagePreallocated.addTag(35, 0); // heartbeat
-        final FixField preallocatedFieldForTag = incomingFixMessage.getPreallocatedFieldForTag(112);
-        final String receivedTestRequestId = preallocatedFieldForTag.valueAsString();
+        final FixMessageValue preallocatedFieldForTag = incomingFixMessage.getField(112, false);
+        final CharSequence receivedTestRequestId = preallocatedFieldForTag.pureStringValue();
         controlMessagePreallocated.addTag(112, receivedTestRequestId); // received test req id
         sendControlMessage(controlMessagePreallocated);
     }

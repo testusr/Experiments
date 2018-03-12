@@ -40,7 +40,25 @@ public class FixMessage {
         }
     }
 
-    public FixField getPreallocatedFieldForTag(int tag) {
+    public FixMessageValue getField(int tag, boolean createIfNotExists) {
+        FixField messageField = mandatoryMessageField(tag);
+        if (messageField != null) {
+            return messageField;
+        }
+        for (int i = 0; i < messageValues.size(); i++) {
+            if (messageValues.get(i).tag() == tag) {
+                return messageValues.get(i);
+            }
+        }
+        if (createIfNotExists) {
+            FixField nextFieldFromPool = nextFixFieldFromPool();
+            messageValues.add(nextFieldFromPool);
+            return nextFieldFromPool;
+        }
+        return null;
+    }
+
+    public FixField mandatoryMessageField(int tag) {
         switch (tag) {
             case 8: {
                 return beginString;
@@ -69,12 +87,20 @@ public class FixMessage {
             case 10: {
                 return checkSum;
             }
-            default: {
-                FixField nextFieldFromPool = nextFixFieldFromPool();
-                messageValues.add(nextFieldFromPool);
-                return nextFieldFromPool;
-            }
+            default:
+                return null;
         }
+
+    }
+
+    public FixField getPreallocatedFieldForTag(int tag) {
+        FixField messageField = mandatoryMessageField(tag);
+        if (messageField != null) {
+            return messageField;
+        }
+        FixField nextFieldFromPool = nextFixFieldFromPool();
+        messageValues.add(nextFieldFromPool);
+        return nextFieldFromPool;
     }
 
     public void beginString(CharSequence value) {
@@ -136,7 +162,7 @@ public class FixMessage {
         return null;
     }
 
-    public FixMessage addTag(int tag, String value) {
+    public FixMessage addTag(int tag, CharSequence value) {
         final FixField simpleFixField = getPreallocatedFieldForTag(tag);
         simpleFixField.setValue(tag, value);
         return this;

@@ -66,10 +66,10 @@ public class StartSimpleFixServerTestSetup {
                             if (clientSession.isConnected()) {
                                 clientSession.readMessage();
                                 if (sendMessage) {
-                                    if (clientSession.sendMessage(fixMessage)) {
-                                    } else {
-                                        System.out.println("[STARTER] not connected");
-                                    }
+//                                    if (clientSession.sendMessage(fixMessage)) {
+//                                    } else {
+//                                        System.out.println("[STARTER] not connected");
+//                                    }
                                 }
                                 try {
                                     Thread.sleep(5);
