@@ -1,0 +1,19 @@
+-> implement multi user test
+  -> 20 (or x) clients / sessions
+  -> simulate missbehaving clients
+    -> slow consumer
+    -> flooding with control messages
+        -> heartbeat floods
+    -> constantly reconnecting
+    -> logon to unknown sessions
+-> features
+    -> heartbeats from server side
+
+-> overhaul design
+-> make low gc
+-> implement performance measurements
+-> improve performance
+
+
+
+     

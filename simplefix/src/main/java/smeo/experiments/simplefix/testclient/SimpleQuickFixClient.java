@@ -1,11 +1,9 @@
 package smeo.experiments.simplefix.testclient;
 
 import quickfix.*;
-import quickfix.field.*;
 import quickfix.fix50.ExecutionReport;
 import quickfix.fix50.MarketDataSnapshotFullRefresh;
 import quickfix.fix50.MessageCracker;
-import quickfix.fix50.NewOrderSingle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +13,12 @@ import java.util.Scanner;
  * Created by smeo on 22.02.17.
  */
 public class SimpleQuickFixClient extends MessageCracker implements Application {
+    private final int clientId;
     int toApp = 0;
+
+    public SimpleQuickFixClient(int clientId) {
+        this.clientId = clientId;
+    }
 
     /**
      * (non-Javadoc)
@@ -74,7 +77,7 @@ public class SimpleQuickFixClient extends MessageCracker implements Application 
      */
     @Override
     public void toApp(Message message, SessionID sessionId) throws DoNotSend {
-        System.out.println("toApp (" + ++toApp + "): " + message);
+        System.out.println("[CLIENT " + clientId + "] toApp (" + ++toApp + "): " + message);
     }
 
     /*** (non-Javadoc)
@@ -87,12 +90,12 @@ public class SimpleQuickFixClient extends MessageCracker implements Application 
 
     @Override
     public void onMessage(MarketDataSnapshotFullRefresh message, SessionID sessionID) throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
-        System.out.println("fullRefresh: " + message);
+        System.out.println("[CLIENT " + clientId + "] fullRefresh: " + message);
     }
 
     @Override
     public void onMessage(Message message, SessionID sessionID) throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
-        System.out.println("onMessage: " + message);
+        System.out.println("[CLIENT " + clientId + "] onMessage: " + message);
         if (message instanceof ExecutionReport) {
             ExecutionReport exmessage = (ExecutionReport) message;
             System.out.println("Received Execution report from server");
@@ -111,7 +114,7 @@ public class SimpleQuickFixClient extends MessageCracker implements Application 
         try {
             InputStream is = SimpleQuickFixClient.class.getResourceAsStream("/client.cfg");
             SessionSettings initiatorSettings = new SessionSettings(is);
-            Application initiatorApplication = new SimpleQuickFixClient();
+            Application initiatorApplication = new SimpleQuickFixClient(0);
             FileStoreFactory fileStoreFactory = new FileStoreFactory(initiatorSettings);
             FileLogFactory fileLogFactory = new FileLogFactory(initiatorSettings);
             SLF4JLogFactory logFactory = new SLF4JLogFactory(initiatorSettings);
@@ -130,7 +133,6 @@ public class SimpleQuickFixClient extends MessageCracker implements Application 
             System.out.println("Logged In...");
 
             Thread.sleep(5000);
-            bookSingleOrder(sessionId);
 
             System.out.println("Type to quit");
             Scanner scanner = new Scanner(System.in);
@@ -147,32 +149,4 @@ public class SimpleQuickFixClient extends MessageCracker implements Application 
         }
     }
 
-    private static void bookSingleOrder(SessionID sessionID) {
-        System.out.println("Calling bookSingleOrder");
-        //In real world this won't be a hardcoded value rather than a sequence.
-        ClOrdID orderId = new ClOrdID("1");
-        //to be executed on the exchange
-        HandlInst instruction = new HandlInst(HandlInst.AUTOMATED_EXECUTION_ORDER_PRIVATE);
-        //Since its FX currency pair name
-        Symbol mainCurrency = new Symbol("EUR/USD");
-        //Which side buy, sell
-        Side side = new Side(Side.BUY);
-        //Time of transaction
-        TransactTime transactionTime = new TransactTime();
-        //Type of our order, here we are assuming this is being executed on the exchange
-        OrdType orderType = new OrdType(OrdType.FOREX_MARKET);
-        NewOrderSingle newOrderSingle = new NewOrderSingle(orderId, side, transactionTime, orderType);
-        //Quantity
-        newOrderSingle.set(new OrderQty(100));
-        newOrderSingle.set(mainCurrency);
-        newOrderSingle.set(instruction);
-        newOrderSingle.set(new Price(1.0));
-
-
-        try {
-            Session.sendToTarget(newOrderSingle, sessionID);
-        } catch (SessionNotFound e) {
-            e.printStackTrace();
-        }
-    }
 }

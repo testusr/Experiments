@@ -10,7 +10,7 @@ import java.nio.channels.SocketChannel;
 
 public class SimpleFixSession {
     SimpleSessionConfig sessionConfig;
-    SessionContext sessionContext;
+    SessionState sessionState;
     private boolean isConnected = false;
 
     private ByteBuffer writeBuffer = ByteBuffer.allocateDirect(2096);
@@ -27,7 +27,7 @@ public class SimpleFixSession {
     }
 
     private void initSession() {
-        this.sessionContext = new SessionContext();
+        this.sessionState = new SessionState();
     }
 
 
@@ -35,7 +35,7 @@ public class SimpleFixSession {
         System.out.println("[SESSION '" + sessionConfig.toString() + " resetting sequence']");
         controlMessagePreallocated.refurbish();
         controlMessagePreallocated.addTag(35, 4); // SequenceReset
-        controlMessagePreallocated.addTag(36, sessionContext.seqNo + 1); // NewSeqNo
+        controlMessagePreallocated.addTag(36, sessionState.seqNo + 1); // NewSeqNo
         sendControlMessage(controlMessagePreallocated);
     }
 
@@ -54,7 +54,7 @@ public class SimpleFixSession {
         this.isConnected = false;
         this.socketChannel = socketChannel;
         this.socketChannel.configureBlocking(false);
-        this.sessionContext.seqNo = 1;
+        this.sessionState.seqNo = 1;
     }
 
     public void markAsConnected() {
@@ -83,10 +83,11 @@ public class SimpleFixSession {
         fixMessage.targetCompanyId(sessionConfig.senderCompID);
         fixMessage.targetSubId(sessionConfig.senderSubID);
 
-        fixMessage.msgSeqNum(sessionContext.nextSeqId());
+        fixMessage.msgSeqNum(sessionState.nextSeqId());
         writeBuffer.clear();
         fixMessage.writeToByteBuffer(writeBuffer);
-        //  System.out.println("[SESSION '" + sessionConfig.toString() + "'] --> from Buffer: " + new String(writeBuffer.array(), Charset.forName("UTF-8")));
+//        System.out.println("[SESSION '" + sessionConfig.toString() + "'] --> from Buffer: " + new String(writeBuffer.array(), Charset.forName("UTF-8")));
+        System.out.println("[SESSION '" + sessionConfig.toString() + "'] --> from FixMessage: " + FixMessage.asString(fixMessage));
 
 
         try {

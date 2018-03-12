@@ -65,7 +65,7 @@ public class SimpleFixMessageParser {
                 }
                 if (!tempFixField.isSeparator()) {
                     targetMessage.addValue(tempFixField);
-                    System.out.println("[SERVER] parseNextMessage - parsed field '" + tempFixField.toString() + "'");
+                    // System.out.println("[SERVER] parseNextMessage - parsed field '" + tempFixField.toString() + "'");
 
                     if (isCheckSum(tempFixField)) {
                         srcByteBuffer.compact();

@@ -1,6 +1,6 @@
 package smeo.experiments.simplefix.server;
 
-public class SessionContext {
+public class SessionState {
     int hearBeatId = 0;
     int seqNo = 0;
 
