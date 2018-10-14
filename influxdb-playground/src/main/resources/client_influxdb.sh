@@ -1,0 +1,1 @@
+influx -host localhost -port 8086 -database edf-audit -username root -password root

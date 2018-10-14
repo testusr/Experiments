@@ -1,0 +1,19 @@
+curl -G 'http://localhost:8086/query?pretty=true' --data-urlencode "db=edf-audit" --data-urlencode "q=SELECT last(\"mid\") FROM \"edf-outgoing\" WHERE ccyPair = 'EURUSD' AND time >= '2018-10-04T10:00:00Z' and time < '2018-10-04T11:00:00Z' GROUP BY time(1s) limit 10"
+curl -G 'http://localhost:8086/query?pretty=true' --data-urlencode "db=edf-audit" --data-urlencode "chunked=true"  --data-urlencode "chunk_size=2"  --data-urlencode "q=SELECT last(\"mid\") FROM \"edf-outgoing\" WHERE ccyPair = 'EURUSD' AND time >= '2018-10-04T10:00:00Z' and time < '2018-10-04T11:00:00Z' GROUP BY time(1s) limit 10"
+
+
+
+import 28GB
+/usr/lib/jvm/java-8-oracle/bin/java -javaagent:/home/smeo/apps/idea-IU-181.4203.550/lib/idea_rt.jar=37013:/home/smeo/apps/idea-IU-181.4203.550/bin -Dfile.encoding=UTF-8 -classpath /usr/lib/jvm/java-8-oracle/jre/lib/charsets.jar:/usr/lib/jvm/java-8-oracle/jre/lib/deploy.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/cldrdata.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/dnsns.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/jaccess.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/jfxrt.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/localedata.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/nashorn.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/sunec.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/sunjce_provider.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/sunpkcs11.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/zipfs.jar:/usr/lib/jvm/java-8-oracle/jre/lib/javaws.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jce.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jfr.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jfxswt.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jsse.jar:/usr/lib/jvm/java-8-oracle/jre/lib/management-agent.jar:/usr/lib/jvm/java-8-oracle/jre/lib/plugin.jar:/usr/lib/jvm/java-8-oracle/jre/lib/resources.jar:/usr/lib/jvm/java-8-oracle/jre/lib/rt.jar:/home/smeo/IdeaProjects/Experiments/influxdb-playground/target/classes:/home/smeo/.m2/repository/org/influxdb/influxdb-java/2.13/influxdb-java-2.13.jar:/home/smeo/.m2/repository/com/squareup/retrofit2/retrofit/2.4.0/retrofit-2.4.0.jar:/home/smeo/.m2/repository/com/squareup/retrofit2/converter-moshi/2.4.0/converter-moshi-2.4.0.jar:/home/smeo/.m2/repository/com/squareup/moshi/moshi/1.5.0/moshi-1.5.0.jar:/home/smeo/.m2/repository/org/msgpack/msgpack-core/0.8.16/msgpack-core-0.8.16.jar:/home/smeo/.m2/repository/com/squareup/okhttp3/okhttp/3.11.0/okhttp-3.11.0.jar:/home/smeo/.m2/repository/com/squareup/okio/okio/1.14.0/okio-1.14.0.jar:/home/smeo/.m2/repository/com/squareup/okhttp3/logging-interceptor/3.11.0/logging-interceptor-3.11.0.jar smeo.experiments.playground.influxdb.CsvToInfluxDbWriter
+start Fri Oct 12 01:47:12 CEST 2018
+2018-10-12 08:15:40
+done Fri Oct 12 15:49:07 CEST 2018
+points :  380.862.207
+
+name: tsm1_filestore
+tags: database=edf-audit, engine=tsm1, id=2, path=/var/lib/influxdb/data/edf-audit/defaultPolicy/2, retentionPolicy=defaultPolicy, walPath=/var/lib/influxdb/wal/edf-audit/defaultPolicy/2
+diskBytes	numFiles
+---------	--------
+876061033	1
+
+=> 878 MB ! Good ! // so a gb a day 100GB for 90 days ... sounds perfect
