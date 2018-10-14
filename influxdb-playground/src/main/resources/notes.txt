@@ -1,6 +1,9 @@
 curl -G 'http://localhost:8086/query?pretty=true' --data-urlencode "db=edf-audit" --data-urlencode "q=SELECT last(\"mid\") FROM \"edf-outgoing\" WHERE ccyPair = 'EURUSD' AND time >= '2018-10-04T10:00:00Z' and time < '2018-10-04T11:00:00Z' GROUP BY time(1s) limit 10"
 curl -G 'http://localhost:8086/query?pretty=true' --data-urlencode "db=edf-audit" --data-urlencode "chunked=true"  --data-urlencode "chunk_size=2"  --data-urlencode "q=SELECT last(\"mid\") FROM \"edf-outgoing\" WHERE ccyPair = 'EURUSD' AND time >= '2018-10-04T10:00:00Z' and time < '2018-10-04T11:00:00Z' GROUP BY time(1s) limit 10"
 
+installing candlestick chart:
+download unzip and copy to grafana plugins folder: https://github.com/ilgizar/ilgizar-candlestick-panel
+docker cp ilgizar-candlestick-panel grafana:/var/lib/grafana/plugins
 
 
 import 28GB
