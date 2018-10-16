@@ -1,15 +1,17 @@
 package smeo.experiments.playground.influxdb;
 
+import org.apache.commons.lang3.time.DateParser;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -18,20 +20,23 @@ public class CsvToInfluxDbWriter {
     final List<String[]> floatFieldNames = new ArrayList<>();
     final List<String[]>  stringFieldNames = new ArrayList<>();
     final List<String[]>  tagNames = new ArrayList<>();
+    static final String QUOTE = "Q";
     int timeField = 0;
 
     InfluxDB influxDB;
-    int targetedBatchSize = 1000;
+    int targetedBatchSize = 100000;
 
-    SimpleDateFormat format = new SimpleDateFormat("dd.MM.yy HH:mm:ss.SSS", Locale.ENGLISH);
+   // SimpleDateFormat format = new SimpleDateFormat("dd.MM.yy HH:mm:ss.SSS", Locale.ENGLISH);
     private BatchPoints batchPoints;
     private long allPoints = 0;
+
+    private static final DateParser format = FastDateFormat.getInstance("dd.MM.yy HH:mm:ss.SSS",TimeZone.getTimeZone("GMT"));
 
     private CsvToInfluxDbWriter() {
     }
 
     public void prepare() {
-        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+        //format..setTimeZone(TimeZone.getTimeZone("GMT"));
         newBatch();
         influxDB = InfluxDBFactory.connect(databaseURL(), userName(), password());
         influxDB.createDatabase(dbName());
@@ -66,17 +71,34 @@ public class CsvToInfluxDbWriter {
     }
 
     public void parseCsvFile(String fileName) {
-        try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
-            stream.forEach(this::pushCsvToInflux);
-        } catch (IOException e) {
-            e.printStackTrace();
+        System.out.println("start parsing file - '"+fileName+"'");
+        long start = System.currentTimeMillis();
+        if (fileName.endsWith("bz2")){
+            System.out.println("ZIP Compressed file detected: " + fileName);
+            try (Stream<String> stream = Bz2Files.lines(Paths.get(fileName))) {
+                stream.forEach(this::pushCsvToInflux);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+                stream.forEach(this::pushCsvToInflux);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         influxDB.write(batchPoints);
         newBatch();
+        double timeInSeconds = (System.currentTimeMillis() - start) / 1000.0;
+        System.out.println(" -- done: written '"+this.allPoints+"' in '"+ timeInSeconds +"' seconds ");
     }
 
     private void pushCsvToInflux(String csvLine) {
         String[] elements = csvLine.split(delimiter());
+        if (elements.length < 10 || elements[1].hashCode() != QUOTE.hashCode())
+            return;
+        int lastTimeHash = -1;
+        Long lastTime = -1L;
 
         for (int c=0; c < this.floatFieldNames.size(); c++) {
             Point.Builder point = Point.measurement(measurement());
@@ -85,7 +107,12 @@ public class CsvToInfluxDbWriter {
             String[] _stringFieldNames = stringFieldNames.get(c);
 
             for (int i = 0; i < elements.length; i++) {
-                Long time = parseTimeField(elements[timeField]);
+                String timef = elements[timeField];
+                Long time = lastTime;
+                if (lastTimeHash != timef.hashCode()) {
+                    lastTime = time = parseTimeField(timef);
+                    lastTimeHash = timef.hashCode();
+                }
 
                 if (time != null) {
                     point.time(time, TimeUnit.MILLISECONDS);
@@ -178,9 +205,25 @@ public class CsvToInfluxDbWriter {
         csvToInfluxDbWriter.prepare();
         System.out.println("start " + new Date());
 //        csvToInfluxDbWriter.parseCsvFile("/home/smeo/IdeaProjects/Experiments/influxdb-playground/src/main/resources/tesfile.csv");
-        csvToInfluxDbWriter.parseCsvFile("/home/smeo/Downloads/all.logs");
+        csvToInfluxDbWriter.parseAllFilesEndingWith(args[0], "bz2");
         System.out.println("done " + new Date());
         System.out.println("points :  " + csvToInfluxDbWriter.allPoints);
+    }
+
+    private void parseAllFilesEndingWith(String directory, String fileEnding) {
+        File srcDir = new File(directory);
+        if (srcDir.isDirectory()){
+            File[] files = srcDir.listFiles();
+            for (File file : files) {
+                if (file.getAbsolutePath().endsWith(fileEnding)){
+                    parseCsvFile(file.getAbsolutePath());
+                    file.renameTo(new File(file.getAbsolutePath()+"_processed"));
+                }
+            }
+
+        } else {
+            System.err.println("'"+directory+"' is not a directory");
+        }
     }
 
 }
