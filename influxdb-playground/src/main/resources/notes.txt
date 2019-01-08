@@ -20,3 +20,18 @@ diskBytes	numFiles
 876061033	1
 
 => 878 MB ! Good ! // so a gb a day 100GB for 90 days ... sounds perfect
+
+/usr/lib/jvm/java-8-oracle/bin/java -Dvisualvm.id=8701628437138 -javaagent:/home/smeo/apps/idea-IU-181.4203.550/lib/idea_rt.jar=45267:/home/smeo/apps/idea-IU-181.4203.550/bin -Dfile.encoding=UTF-8 -classpath /usr/lib/jvm/java-8-oracle/jre/lib/charsets.jar:/usr/lib/jvm/java-8-oracle/jre/lib/deploy.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/cldrdata.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/dnsns.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/jaccess.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/jfxrt.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/localedata.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/nashorn.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/sunec.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/sunjce_provider.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/sunpkcs11.jar:/usr/lib/jvm/java-8-oracle/jre/lib/ext/zipfs.jar:/usr/lib/jvm/java-8-oracle/jre/lib/javaws.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jce.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jfr.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jfxswt.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jsse.jar:/usr/lib/jvm/java-8-oracle/jre/lib/management-agent.jar:/usr/lib/jvm/java-8-oracle/jre/lib/plugin.jar:/usr/lib/jvm/java-8-oracle/jre/lib/resources.jar:/usr/lib/jvm/java-8-oracle/jre/lib/rt.jar:/home/smeo/IdeaProjects/Experiments/influxdb-playground/target/classes:/home/smeo/.m2/repository/org/influxdb/influxdb-java/2.14/influxdb-java-2.14.jar:/home/smeo/.m2/repository/com/squareup/retrofit2/retrofit/2.4.0/retrofit-2.4.0.jar:/home/smeo/.m2/repository/com/squareup/retrofit2/converter-moshi/2.4.0/converter-moshi-2.4.0.jar:/home/smeo/.m2/repository/com/squareup/moshi/moshi/1.5.0/moshi-1.5.0.jar:/home/smeo/.m2/repository/org/msgpack/msgpack-core/0.8.16/msgpack-core-0.8.16.jar:/home/smeo/.m2/repository/com/squareup/okhttp3/okhttp/3.11.0/okhttp-3.11.0.jar:/home/smeo/.m2/repository/com/squareup/okio/okio/1.14.0/okio-1.14.0.jar:/home/smeo/.m2/repository/com/squareup/okhttp3/logging-interceptor/3.11.0/logging-interceptor-3.11.0.jar:/home/smeo/.m2/repository/org/apache/commons/commons-compress/1.10/commons-compress-1.10.jar:/home/smeo/.m2/repository/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar smeo.experiments.playground.influxdb.CsvToInfluxDbWriter /media/smeo/SHARED/audits
+start Tue Oct 16 05:43:03 CEST 2018
+start parsing file - '/media/smeo/SHARED/audits/engine.log.2018-10-01_00-00.bz2'
+ZIP Compressed file detected: /media/smeo/SHARED/audits/engine.log.2018-10-01_00-00.bz2
+ -- done: written '3289532172' in '3.834' seconds
+start parsing file - '/media/smeo/SHARED/audits/engine.log.2018-10-13_23-00.bz2'
+ZIP Compressed file detected: /media/smeo/SHARED/audits/engine.log.2018-10-13_23-00.bz2
+ -- done: written '3289581594' in '3.804' seconds
+done Tue Oct 16 17:26:32 CEST 2018
+points :  3289581594
+
+13 days (10 workdays) unthrottled data (max 1/ms) ~8GB on disk expected disk size 30 days max 20GB
+1m full details (unthrottled)
+1m->3m 5ms snapshots.

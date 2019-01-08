@@ -13,6 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -25,6 +28,8 @@ public class CsvToInfluxDbWriter {
 
     InfluxDB influxDB;
     int targetedBatchSize = 100000;
+
+    ExecutorService executorService = new ThreadPoolExecutor(1, 4, 5, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>());
 
    // SimpleDateFormat format = new SimpleDateFormat("dd.MM.yy HH:mm:ss.SSS", Locale.ENGLISH);
     private BatchPoints batchPoints;
