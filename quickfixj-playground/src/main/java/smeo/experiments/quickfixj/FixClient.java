@@ -143,7 +143,6 @@ public class FixClient extends MessageCracker implements Application {
 		//In real world this won't be a hardcoded value rather than a sequence.
 		ClOrdID orderId = new ClOrdID("1");
 		//to be executed on the exchange
-		HandlInst instruction = new HandlInst(HandlInst.AUTOMATED_EXECUTION_ORDER_PRIVATE);
 		//Since its FX currency pair name
 		Symbol mainCurrency = new Symbol("EUR/USD");
 		//Which side buy, sell
@@ -156,7 +155,6 @@ public class FixClient extends MessageCracker implements Application {
 		//Quantity
 		newOrderSingle.set(new OrderQty(100));
 		newOrderSingle.set(mainCurrency);
-		newOrderSingle.set(instruction);
 		newOrderSingle.set(new Price(1.0));
 
 
