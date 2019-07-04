@@ -156,6 +156,7 @@ public class FixClient extends MessageCracker implements Application {
 		newOrderSingle.set(new OrderQty(100));
 		newOrderSingle.set(mainCurrency);
 		newOrderSingle.set(new Price(1.0));
+		newOrderSingle.set(new HandlInst('1'));
 
 
 		try {
