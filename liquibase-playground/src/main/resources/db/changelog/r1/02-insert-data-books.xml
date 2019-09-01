@@ -39,6 +39,14 @@
             <column name="title" value="book_01_a_05"/>
             <column name="author" valueNumeric="05"/>
         </insert>
+        <sqlFile dbms="h2, oracle"
+                 encoding="utf8"
+                 endDelimiter="\nGO"
+                 path="sql/insert_books.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+
         <rollback>truncate table books</rollback>
         <sql dbms="sybase">
             SET IDENTITY_INSERT books OFF;
