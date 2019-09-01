@@ -10,5 +10,6 @@
     <include file="r1/01-tag-version.xml" relativeToChangelogFile="true"/>
     <include file="r1/02-insert-data-authors.xml" relativeToChangelogFile="true"/>
     <include file="r1/02-insert-data-books.xml" relativeToChangelogFile="true"/>
+    <include file="r1/03-apply-model-change.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
