@@ -10,9 +10,9 @@
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">select count(*) from books</sqlCheck>
         </preConditions>
-        <!--sql dbms="sybase">
+        <sql dbms="sybase">
             SET IDENTITY_INSERT books ON;
-        </sql-->
+        </sql>
         <comment>Inserting Books</comment>
         <insert tableName="books">
             <column name="id" valueNumeric="1"/>
@@ -40,9 +40,9 @@
             <column name="author" valueNumeric="05"/>
         </insert>
         <rollback>truncate table books</rollback>
-        <!--sql dbms="sybase">
+        <sql dbms="sybase">
             SET IDENTITY_INSERT books OFF;
-        </sql -->
+        </sql>
     </changeSet>
 
 </databaseChangeLog>
