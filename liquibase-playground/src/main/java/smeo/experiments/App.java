@@ -13,6 +13,8 @@ import smeo.experiments.liquibase.domain.model.Book;
 import smeo.experiments.liquibase.domain.repo.AuthorRepository;
 import smeo.experiments.liquibase.domain.repo.BookRepository;
 
+import java.io.IOException;
+
 /**
  * Hello world!
  *
@@ -36,6 +38,9 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+
+        waitForKeyPressed("waiting for key pressed to continue");
+
         logger.info("Student id 10001 -> {}", bookRepository.findById(10001));
 
         logger.info("All users 1 -> {}", bookRepository.findAll());
@@ -51,12 +56,15 @@ public class App implements CommandLineRunner {
         meAuthor.setName("MeNewAuthor");
         logger.info("Update author -> {}", authorRepository.save(meAuthor));
         logger.info("All users 2 -> {}", bookRepository.findAll());
-        logger.info("waiting for key pressed to continue");
-        System.in.read();
+        waitForKeyPressed("waiting for key pressed to continue");
 
         bookRepository.deleteById(myNewBook.getId());
         logger.info("All users 2 -> {}", bookRepository.findAll());
-        logger.info("waiting for key pressed to terminate");
+        waitForKeyPressed("waiting for key pressed to terminate");
+    }
+
+    private void waitForKeyPressed(String s) throws IOException {
+        logger.info(s);
         System.in.read();
     }
 }

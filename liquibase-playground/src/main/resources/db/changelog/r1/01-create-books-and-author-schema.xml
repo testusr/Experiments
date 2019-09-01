@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    <changeSet author="smeo (generated)" id="1567345054342-1">
+        <createTable tableName="authors">
+            <column name="id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="smeo (generated)" id="1567345054342-2">
+        <createTable tableName="books">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints primaryKey="true" primaryKeyName="booksPK"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="smeo (generated)" id="1567345054342-3">
+        <addPrimaryKey columnNames="id" constraintName="authorsPK" tableName="authors"/>
+    </changeSet>
+    <changeSet author="smeo (generated)" id="1567345054342-4">
+        <addUniqueConstraint columnNames="name" constraintName="UC_AUTHORSNAME_COL" tableName="authors"/>
+    </changeSet>
+    <changeSet author="smeo (generated)" id="1567345054342-5">
+        <addUniqueConstraint columnNames="title" constraintName="UC_BOOKSTITLE_COL" tableName="books"/>
+    </changeSet>
+    <changeSet author="smeo (generated)" id="1567345054342-6">
+        <addForeignKeyConstraint baseColumnNames="author" baseTableName="books" constraintName="FK_jmb8pjl71ur97tykflovrx8m4" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="authors"/>
+    </changeSet>
+</databaseChangeLog>
