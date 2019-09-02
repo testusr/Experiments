@@ -8,9 +8,9 @@
 
     <changeSet id="02" author="truehl" context="test">
         <comment>Inserting Authors</comment>
-        <sql dbms="sybase">
+        <!--sql dbms="sybase">
             SET IDENTITY_INSERT authors ON;
-        </sql>
+        </sql-->
         <insert tableName="authors">
             <column name="id" valueNumeric="1"/>
             <column name="name" value="author_01"/>
@@ -31,9 +31,9 @@
             <column name="id" valueNumeric="5"/>
             <column name="name" value="author_05"/>
         </insert>
-        <sql dbms="sybase">
+        <!--sql dbms="sybase">
             SET IDENTITY_INSERT authors OFF;
-        </sql>
+        </sql-->
         <rollback>truncate table authors</rollback>
     </changeSet>
 
