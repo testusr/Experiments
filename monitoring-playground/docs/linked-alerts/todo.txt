@@ -1,0 +1,7 @@
+1) write fake quote provider for prometheus
+2) grafana dashboard for the prometheus data
+3) write alerts based on currency couple update time etc
+    3.1 write alert template including a grafana
+     - time field https://stackoverflow.com/questions/41069912/populating-a-date-time-in-prometheus-alert-manager-e-mail
+    3.2 and or image http://docs.grafana.org/reference/sharing/
+     => expiring snapshots

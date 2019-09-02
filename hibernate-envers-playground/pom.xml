@@ -14,7 +14,7 @@
   <url>http://maven.apache.org</url>
 
   <properties>
-    <!-- first working version with our models is 4.2.0.Final current platform version 3.6.0.Final-->
+    <!-- first working version with our model is 4.2.0.Final current platform version 3.6.0.Final-->
     <hibernate.version>5.1.0.Final</hibernate.version>
 
   </properties>

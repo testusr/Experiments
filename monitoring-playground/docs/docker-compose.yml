@@ -1,0 +1,38 @@
+---
+version: '2'
+services:
+  #docker run -d -p 9090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml
+  #/-v /tmp/alert_rules:/opt/prometheus/etc/rules/alerts --name prometheus prom/prometheus \
+  #-alertmanager.url http://192.168.99.100:9093 -config.file=/etc/prometheus/prometheus.yml
+  prometheus:
+    image: prom/prometheus
+    hostname: prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert_rules:/opt/prometheus/etc/rules/alerts
+    environment:
+      alertmanager.url: http://localhost.9093
+      config.file: /etc/prometheus/prometheus.yml
+    depends_on:
+      - alertmanager
+
+ #docker run -d -p 9093:9093 \
+    #    -v /tmp/alertmanager.yml:/etc/alertmanager/config.yml \
+    #    --name alertmanager prom/alertmanager
+  alertmanager:
+    image: prom/alertmanager
+    hostname: alertmanager
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/config.yml
+
+#docker run -d -p 3000:3000 --link influxdb:influxdb --name grafana grafana/grafana
+  grafana:
+    image: grafana/grafana
+    hostname: grafana
+    container_name: grafana_dc
+    ports:
+      - "3000:3000"

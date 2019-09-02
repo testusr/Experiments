@@ -100,6 +100,9 @@ public class FixClient extends MessageCracker implements Application {
 	public static void main(String[] args) {
 		SocketInitiator socketInitiator = null;
 		try {
+			String fixconfig = args[0];
+			String testproperties = args[1];
+
 			InputStream is = FixClient.class.getResourceAsStream("client.cfg");
 			SessionSettings initiatorSettings = new SessionSettings(is);
 			Application initiatorApplication = new FixClient();

@@ -9,21 +9,25 @@
   <name>smeo-experiments</name>
 
   <modules>
-    <module>aop-playground</module>
-    <module>hibernate-playground</module>
-    <module>hibernate-envers-playground</module>
-    <module>spring-playground</module>
-    <module>utils</module>
-    <module>jaxb-playground</module>
-    <module>cep-esper-playground</module>
-    <module>chronicle-playground</module>
+    <!--<module>aop-playground</module>-->
+    <!--<module>hibernate-playground</module>-->
+    <!--<module>hibernate-envers-playground</module>-->
+    <!--<module>spring-playground</module>-->
+    <!--<module>utils</module>-->
+    <!--<module>jaxb-playground</module>-->
+    <!--<module>cep-esper-playground</module>-->
+    <!--<module>chronicle-playground</module>-->
     <module>monitoring-playground</module>
     <module>quickfixj-playground</module>
-    <module>network-playground</module>
-    <module>test-utils</module>
+    <!-- <module>influxdb-playground</module>
+    <module>rest-playground</module-->
+    <!--<module>network-playground</module>-->
+    <!--<module>test-utils</module>-->
     <module>annotation-processor-playground</module>
     <module>codegen-models</module>
-    <module>annotations-playground</module>
+    <!--<module>annotations-playground</module>-->
+    <!--module>simplefix</module-->
+    <module>liquibase-playground</module>
   </modules>
 
   <properties>

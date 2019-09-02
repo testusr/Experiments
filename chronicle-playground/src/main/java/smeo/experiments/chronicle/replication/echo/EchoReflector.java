@@ -24,6 +24,7 @@ public class EchoReflector {
 			echoReflection.relfectEchos(args);
 		} catch (IOException e) {
 			e.printStackTrace();
+
 		}
 	}
 

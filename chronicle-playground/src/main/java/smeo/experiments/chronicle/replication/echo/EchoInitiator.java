@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Connecting to {@link EchoReceiver} to listen for reflected eche remotely and initiate
+ * Connecting to {@link EchoReceiver} to listenForSinksToConnect for reflected eche remotely and initiate
  * echos with payload at a preconfigured frequency.
  */
 public class EchoInitiator {
