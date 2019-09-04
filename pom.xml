@@ -28,6 +28,7 @@
     <!--<module>annotations-playground</module>-->
     <!--module>simplefix</module-->
     <module>liquibase-playground</module>
+    <module>zmq-playground</module>
   </modules>
 
   <properties>

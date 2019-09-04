@@ -19,8 +19,8 @@ public class Book {
   @Column(nullable = false, unique = true)
   private String title;
 
-  //@Column(nullable = true, unique = true)
-  //private String subtitle;
+  @Column(nullable = true, unique = true)
+  private String subtitle;
 
   @ManyToOne
   @JoinColumn(name = "author")
