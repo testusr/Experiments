@@ -66,8 +66,8 @@ public class PricePubSubClient {
                     inByteContainer.write(receiveBuffer.array(), 0, receiveBuffer.position());
                     inPrice.readExternal(in);
 
-                    System.out.println("stream : " + inStreamId.toString());
-                    System.out.println("price : " + inPrice.toString());
+      //              System.out.println("stream : " + inStreamId.toString());
+      //              System.out.println("price : " + inPrice.toString());
                 }
             } catch (Exception e){
                 e.printStackTrace();
@@ -89,7 +89,11 @@ public class PricePubSubClient {
         PricePubSubClient pricePubSubClient = new PricePubSubClient();
         pricePubSubClient.init();
         StreamId streamIdA = StreamId.create("Stream_A");
+        StreamId streamIdB = StreamId.create("Stream_B");
+        StreamId streamIdC = StreamId.create("Stream_C");
         pricePubSubClient.subscribe(streamIdA);
+        pricePubSubClient.subscribe(streamIdB);
+        pricePubSubClient.subscribe(streamIdC);
         while(!Thread.interrupted()){
             pricePubSubClient.readAndPrintMessage();
         }

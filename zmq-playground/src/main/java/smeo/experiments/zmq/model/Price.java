@@ -11,7 +11,7 @@ import java.io.ObjectOutput;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Getter
+@Data
 @ToString
 public class Price implements Externalizable {
     final static AtomicLong lastId = new AtomicLong(0);

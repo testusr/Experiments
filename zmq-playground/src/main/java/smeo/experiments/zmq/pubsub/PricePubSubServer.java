@@ -31,7 +31,7 @@ public class PricePubSubServer {
     public void updatePrice(StreamId streamId, Price price){
         byteContainer.clear();
         try {
-            System.out.printf(".");
+         //   System.out.printf(".");
             streamId.writeExternal(out);
             publisher.send(byteContainer.bytes(), 0, byteContainer.size(), ZMQ.SNDMORE);
             byteContainer.clear();
@@ -52,11 +52,21 @@ public class PricePubSubServer {
         pricePubSubServer.init();
 
         StreamId streamIdA = StreamId.create("Stream_A");
+        StreamId streamIdB = StreamId.create("Stream_B");
+        StreamId streamIdC = StreamId.create("Stream_C");
         Price priceA = Price.random();
+        Price priceB = Price.random();
+        Price priceC = Price.random();
 
+        long id = 0;
         while (!Thread.interrupted()) {
+            priceA.setId(id++);
+            priceB.setId(id++);
+            priceC.setId(id++);
             pricePubSubServer.updatePrice(streamIdA, priceA);
-            Thread.sleep(1000);
+            pricePubSubServer.updatePrice(streamIdB, priceB);
+            pricePubSubServer.updatePrice(streamIdC, priceC);
+            Thread.sleep(1);
         }
         pricePubSubServer.stop();
     }

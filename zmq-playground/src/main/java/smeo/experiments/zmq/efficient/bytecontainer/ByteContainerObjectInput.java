@@ -1,7 +1,7 @@
 package smeo.experiments.zmq.efficient.bytecontainer;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.SerializationUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -57,7 +57,7 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public int available() throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
@@ -67,17 +67,17 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public void readFully(byte[] b) throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
     public void readFully(byte[] b, int off, int len) throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
     public int skipBytes(int n) throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
@@ -92,7 +92,7 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public int readUnsignedByte() throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
@@ -102,7 +102,7 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public int readUnsignedShort() throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
@@ -132,11 +132,11 @@ public class ByteContainerObjectInput implements ObjectInput {
 
     @Override
     public String readLine() throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
     public String readUTF() throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 }

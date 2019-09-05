@@ -1,7 +1,7 @@
 package smeo.experiments.zmq.efficient.bytecontainer;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.SerializationUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
@@ -43,7 +43,7 @@ public class ByteContainerObjectOutput implements ObjectOutput {
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         byteContainer.write(b, off, len);
-        throw new NotImplementedException();
+        throw new NotImplementedException("not implemented");
     }
 
     @Override
@@ -88,17 +88,17 @@ public class ByteContainerObjectOutput implements ObjectOutput {
 
     @Override
     public void writeBytes(String s) throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
     public void writeChars(String s) throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
     public void writeUTF(String s) throws IOException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("");
     }
 
     @Override
