@@ -1,4 +1,4 @@
-package smeo.experiments.zmq.pubsub;
+package smeo.experiments.zmq.pubsub.bytebuffer;
 
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;

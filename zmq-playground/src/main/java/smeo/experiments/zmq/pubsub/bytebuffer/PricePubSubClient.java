@@ -1,4 +1,4 @@
-package smeo.experiments.zmq.pubsub;
+package smeo.experiments.zmq.pubsub.bytebuffer;
 
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
@@ -77,6 +77,7 @@ public class PricePubSubClient {
     }
 
     private byte[] asBytes(StreamId streamId) throws IOException {
+        outByteContainer.clear();
         streamId.writeExternal(out);
         byte[] bytes = new byte[outByteContainer.size()];
         for (int i=0; i < bytes.length; i++){
