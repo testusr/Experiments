@@ -18,6 +18,10 @@ public class JmxVmMonitor {
     final String vmIdentifier;
     final String jmxConnectionString;
     private final JmxValueRecorder jmxValueRecorder;
+
+    private final ValueRecord vmIdentifierEntry;
+    public static final String VM_ID = "vm.id";
+
     Map<String, ValueRecord> jmxPollData = new HashMap<>();
 
     GcDataViaJmxNotifications gcDataViaJmxNotifications = new GcDataViaJmxNotifications();
@@ -27,6 +31,9 @@ public class JmxVmMonitor {
 
     public JmxVmMonitor(String vmIdentifier, String jmxConnectionString)  {
         this.vmIdentifier = vmIdentifier;
+        this.vmIdentifierEntry = new ValueRecord();
+        this.vmIdentifierEntry.update(ValueRecord.ValueType.STRING, vmIdentifier);
+
         this.jmxConnectionString = jmxConnectionString;
         this.jmxValueRecorder = new JmxValueRecorder();
 
@@ -39,7 +46,7 @@ public class JmxVmMonitor {
         jmxValueRecorder.recordObjValues("java.lang:type=OperatingSystem")
                 .attribute("ProcessCpuLoad", DOUBLE).as("vm.cpu");
 
-        gcDataViaJmxNotifications.registerListener(this::dataUpdated);
+        gcDataViaJmxNotifications.registerListener(this::updateData);
         updateValues();
     }
 
@@ -47,11 +54,16 @@ public class JmxVmMonitor {
     private void updateValues() {
         try {
             jmxValueRecorder.recordValues(jmxPollData, getOrcreateServerConnection());
-            dataUpdated(jmxPollData);
+            updateData(jmxPollData);
         } catch (Exception e) {
             this.mbServerConnection = null;
             e.printStackTrace();
         }
+    }
+
+    private void updateData(Map<String, ValueRecord> data) {
+        data.put(VM_ID, vmIdentifierEntry);
+        dataUpdated(data);
     }
 
     public void dataUpdated(Map<String, ValueRecord> data) {

@@ -52,7 +52,7 @@ public class GcDataViaJmxNotifications {
                     .from((CompositeData) notification.getUserData());
 
             long duration = info.getGcInfo().getDuration();
-            long timestamp = notification.getTimeStamp() - duration;
+            long timestamp = info.getGcInfo().getStartTime();
 
             recordDataEntry("gc.type", info.getGcName(), timestamp);
             recordDataEntry("gc.cause", info.getGcCause(), timestamp);
