@@ -1,0 +1,2 @@
+https://piotrminkowski.com/2018/05/11/exporting-metrics-to-influxdb-and-prometheus-using-spring-boot-actuator/
+https://www.baeldung.com/spring-boot-self-hosted-monitoring
