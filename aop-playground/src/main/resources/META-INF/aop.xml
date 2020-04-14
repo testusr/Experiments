@@ -1,11 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <aspectj>
     <aspects>
-        <!-- weave in just this aspect -->
-        <aspect name="com.mycompany.logging.LoggingAspect" />
+        <aspect name="smeo.experiments.playground.aop.aspect.LogDataAccessAspect"/>
+        <weaver options="-verbose -showWeaveInfo">
+            <include within="smeo.experiments.playground.aop.domain..*"/>
+        </weaver>
     </aspects>
-    <weaver options="-debug -Xset:weaveJavaxPackages=true">
-        <!-- only weave classes in our application-specific packages -->
-        <include within="com.mycompany..*" />
-    </weaver>
 </aspectj>
